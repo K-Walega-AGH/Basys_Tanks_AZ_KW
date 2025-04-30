@@ -1,5 +1,7 @@
 # Basys_Tanks - UEC2 Basys3 Project
 
+README zainspirowane tym z labolatorii.
+
 ## Inicjalizacja środowiska
 
 Komendę `. env.sh` trzeba uruchomić za każdym razem, gdy rozpoczynamy pracę w nowej sesji terminala. Następnie, pozostając w głównym folderze, można wywoływać dostępne narzędzia:
