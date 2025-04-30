@@ -33,18 +33,18 @@ set xdc_files {
 
 # Specify SystemVerilog design files location   -- EDIT
 set sv_files {
-    ../rtl/vga_if.sv
-    ../rtl/vga_pkg.sv
-    ../rtl/vga_timing.sv
+    ../rtl/vga/vga_if.sv
+    ../rtl/vga/vga_pkg.sv
+    ../rtl/vga/vga_timing.sv
     ../rtl/delay.sv
-    ../rtl/draw_bg.sv
-    ../rtl/draw_rect_char.sv
-    ../rtl/char_rom.sv
-    ../rtl/font_rom.sv
-    ../rtl/draw_rect.sv
-    ../rtl/draw_rect_ctl.sv
-    ../rtl/image_rom.sv
-    ../rtl/draw_mouse.sv
+    ../rtl/draw_bg_terrain/draw_bg.sv
+    ../rtl/draw_bg_terrain/draw_rect_char.sv
+    ../rtl/draw_bg_terrain/draw_rect_image.sv
+    ../rtl/draw_bg_terrain/draw_rect_ctl.sv
+    ../rtl/rom/char_rom.sv
+    ../rtl/rom/font_rom.sv
+    ../rtl/rom/image_rom.sv
+    ../rtl/draw_bg_terrain/draw_mouse.sv
     ../rtl/top_vga.sv
     rtl/top_vga_basys3.sv
 }
@@ -57,12 +57,12 @@ set verilog_files {
 
 # Specify VHDL design files location            -- EDIT
 set vhdl_files {
-   ../rtl/Ps2Interface.vhd
-   ../rtl/MouseCtl.vhd
-   ../rtl/MouseDisplay.vhd
+   ../rtl/mouse/Ps2Interface.vhd
+   ../rtl/mouse/MouseCtl.vhd
+   ../rtl/mouse/MouseDisplay.vhd
 }
 
 # Specify files for a memory initialization     -- EDIT
 set mem_files {
-   ../rtl/rect/image_rom.data
+   ../rtl/data_files/image_rom.data
 }

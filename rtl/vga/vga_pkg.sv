@@ -18,16 +18,20 @@
     localparam TOTAL_VER_PIXELS = 628;
 
     localparam HBLANK_START = 800;
-    localparam HBLANK_END = 1055;
+    localparam HBLANK_TIME = 256;
+    localparam HBLANK_END = HBLANK_START + HBLANK_TIME - 1;
     localparam VBLANK_START = 600;
-    localparam VBLANK_END = 627;
+    localparam VBLANK_TIME = 28;
+    localparam VBLANK_END = VBLANK_START + VBLANK_TIME - 1;
     
     localparam HSYNC_START = 840;
-    localparam HSYNC_END = 968;
+    localparam HSYNC_TIME = 128;
+    localparam HSYNC_END = HSYNC_START + HSYNC_TIME;
     localparam VSYNC_START = 601;
-    localparam VSYNC_END = 605;
+    localparam VSYNC_TIME = 4;
+    localparam VSYNC_END = VSYNC_START + VSYNC_TIME;
 
-    // draw_rect parameters
+    // draw_rect_image parameters
     //localparam POSITION_HOR_X = 300;
     localparam WIDTH_HOR_X = 48;
     //localparam POSITION_VER_Y = 50;

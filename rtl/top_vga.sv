@@ -49,11 +49,12 @@ module top_vga (
 
     // xpos, ypos signals
     logic [11:0] rect_xpos, rect_ypos;
+    // agh image on mouse
     logic [11:0] rgb_pixel;
     logic [11:0] pixel_addr;
+    // mouse
     logic [11:0] mouse_xpos, mouse_ypos;
     logic left;
-
     // font stuff
     logic [10:0] addr;
     logic [7:0] char_xy;
@@ -63,7 +64,6 @@ module top_vga (
 
     assign addr = {char_code, char_line};
 
-
     /**
      * Signals assignments
      */
@@ -71,8 +71,6 @@ module top_vga (
     assign hs = vga_mouse.hsync;
     assign {r,g,b} = vga_mouse.rgb;
 
-    //assign xpos = 12'b0;
-    //assign ypos = 12'b0;
     /**
      * Submodules instances
      */
@@ -96,19 +94,6 @@ module top_vga (
 
         .bg_out (vga_bg)
     );
-/*
-    draw_rect_char #(.N_buf(2)) u_draw_rect_char (
-        .clk(clk),
-        .rst(rst),
-
-        .char_line_pixels(char_line_pixels),
-        .addr(addr),
-        
-        .rect_char_in    (vga_bg),
-        
-        .rect_char_out   (vga_rect_char)
-    );
-*/
 
     draw_rect_char 
         #(
@@ -124,7 +109,6 @@ module top_vga (
         .char_line(char_line),
 
         .rect_char_in    (vga_bg),
-        
         .rect_char_out   (vga_rect_char)
     );
 
@@ -165,7 +149,12 @@ module top_vga (
         .ypos_out(rect_ypos)
     );
 
-    draw_rect #(.N_buf(2)) u_draw_rect (
+    draw_rect_image 
+    #(
+        .N_buf(2),
+        .WIDTH(48),
+        .HEIGHT(64)
+    ) u_draw_rect (
         .clk(clk),
         .rst(rst),
 
@@ -176,9 +165,8 @@ module top_vga (
         .pixel_addr(pixel_addr),
 
 
-        .rect_in    (vga_rect_char),
-        
-        .rect_out   (vga_rect)
+        .rect_image_in    (vga_rect_char),
+        .rect_image_out   (vga_rect)
     );
 
     image_rom u_image_rom ( 
