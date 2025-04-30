@@ -1,5 +1,4 @@
 # Basys_Tanks - UEC2 Basys3 Project
-```
 
 ## Inicjalizacja środowiska
 
