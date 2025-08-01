@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2025  AGH University of Science and Technology
  * MTM UEC2
- * Author: Piotr Kaczmarczyk
+ * Author: Antoni Zasadni
  *
  * Description:
  * Draw background.
@@ -26,7 +26,10 @@ module draw_bg (
      */
 
     logic [11:0] rgb_nxt;
+    logic [19:0] pixel_addr;
+    logic [11:0] rgb_pixel;
 
+    vga_if vga_image_bg();
 
     /**
      * Internal logic
@@ -42,51 +45,58 @@ module draw_bg (
             bg_out.hblnk  <= '0;
             bg_out.rgb    <= '0;
         end else begin
-            bg_out.vcount <= bg_in.vcount;
-            bg_out.vsync  <= bg_in.vsync;
-            bg_out.vblnk  <= bg_in.vblnk;
-            bg_out.hcount <= bg_in.hcount;
-            bg_out.hsync  <= bg_in.hsync;
-            bg_out.hblnk  <= bg_in.hblnk;
+            bg_out.vcount <= vga_image_bg.vcount;
+            bg_out.vsync  <= vga_image_bg.vsync;
+            bg_out.vblnk  <= vga_image_bg.vblnk;
+            bg_out.hcount <= vga_image_bg.hcount;
+            bg_out.hsync  <= vga_image_bg.hsync;
+            bg_out.hblnk  <= vga_image_bg.hblnk;
             bg_out.rgb    <= rgb_nxt;
         end
     end
 
     always_comb begin : bg_comb_blk
-        if (bg_in.vblnk || bg_in.hblnk) begin             // Blanking region:
-            rgb_nxt = 12'h0_0_0;                    // - make it it black.
-        end else begin                              // Active region:
-            if (bg_in.vcount == 0)                     // - top edge:
-                rgb_nxt = 12'hf_f_0;                // - - make a yellow line.
-            else if (bg_in.vcount == VER_PIXELS - 1)   // - bottom edge:
-                rgb_nxt = 12'hf_0_0;                // - - make a red line.
-            else if (bg_in.hcount == 0)                // - left edge:
-                rgb_nxt = 12'h0_f_0;                // - - make a green line.
-            else if (bg_in.hcount == HOR_PIXELS - 1)   // - right edge:
-                rgb_nxt = 12'h0_0_f;                // - - make a blue line.
-            
-            // Add your code here.
-            else if ((bg_in.hcount >= 235 && bg_in.hcount <= 250 && bg_in.vcount >= 200 && bg_in.vcount <= 400) // horizontal_1
-            || (bg_in.hcount >= 235 && bg_in.hcount <= 340 && bg_in.vcount >= 200 && bg_in.vcount <= 215)       // vertical_1
-            || (bg_in.hcount >= 340 && bg_in.hcount <= 355 && bg_in.vcount >= 200 && bg_in.vcount <= 400)       // horizontal_2
-            || (bg_in.hcount >= 235 && bg_in.hcount <= 340 && bg_in.vcount >= 290 && bg_in.vcount <= 305))      // vertical_2
-                rgb_nxt = 12'hA_0_A;  // Letter A
-            
-            else if ((bg_in.hcount >= 400 && bg_in.hcount <= 520 && bg_in.vcount >= 200 && bg_in.vcount <= 215) // vertical_1
-            || ( (bg_in.vcount + 2*bg_in.hcount >= 1185) && (bg_in.vcount + 2*bg_in.hcount <= 1255) 
-            && bg_in.vcount >= 215 && bg_in.vcount <= 385)                                                // diagonal_1
-            || (bg_in.hcount >= 400 && bg_in.hcount <= 520 && bg_in.vcount >= 385 && bg_in.vcount <= 400))      // vertical_2
-                rgb_nxt = 12'hA_0_A;  // Letter Z
-
-            else if ((bg_in.hcount - 580)*(bg_in.hcount - 580) + (bg_in.vcount - 395)*(bg_in.vcount - 395) <= 12*12)
-                    rgb_nxt = 12'h0_0_0;  // Dot
-                    
-            else if ((bg_in.hcount - 380)*(bg_in.hcount - 380) + (bg_in.vcount - 250)*(bg_in.vcount - 250) <= 120*120)
-                    rgb_nxt = 12'hD_D_D;  // Big Circle
+        if (vga_image_bg.vblnk || vga_image_bg.hblnk) begin               // Blanking region:
+            rgb_nxt = 12'h0_0_0;        // - make it it black.
+        end else begin                                      // Active region:
+            // all blue edges
+            if (vga_image_bg.vcount == 0)                     // - top edge:
+                rgb_nxt = 12'h0_0_f;
+            else if (vga_image_bg.vcount == VER_PIXELS - 1)   // - bottom edge:
+                rgb_nxt = 12'h0_0_f;
+            else if (vga_image_bg.hcount == 0)                // - left edge:
+                rgb_nxt = 12'h0_0_f;
+            else if (vga_image_bg.hcount == HOR_PIXELS - 1)   // - right edge:
+                rgb_nxt = 12'h0_0_f;
 
             else                                    // The rest of active display pixels:
-                rgb_nxt = 12'h8_8_8;                // - fill with gray.
+                rgb_nxt = vga_image_bg.rgb;            // - fill with IMAGE
         end
     end
+
+// draw_rect_image module for background generation from file
+    draw_rect_image 
+    #(
+        .N_buf(2),
+        .WIDTH(1023),
+        .HEIGHT(767)
+    ) bg_from_image (
+        .clk(clk),
+        .rst(rst),
+
+        .xpos(12'b0),
+        .ypos(12'b0),
+
+        .rgb_pixel(rgb_pixel),
+        .pixel_addr(pixel_addr),
+        
+        .rect_image_in    (bg_in),
+        .rect_image_out   (vga_image_bg)
+    );
+    bg_rom u_bg_rom ( 
+        .clk(clk),
+        .address(pixel_addr),  // address = {addry[9:0], addrx[9:0]}
+        .rgb(rgb_pixel)
+    );
 
 endmodule

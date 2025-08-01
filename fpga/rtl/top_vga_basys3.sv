@@ -33,9 +33,7 @@ module top_vga_basys3 (
      */
 
     wire locked;
-    wire clk100MHz;
-    wire pclk;
-    wire pclk_mirror;
+    wire clk100MHz, clk60MHz, clk40MHz, clk40MHz_mirror;
 
     (* KEEP = "TRUE" *)
     (* ASYNC_REG = "TRUE" *)
@@ -48,31 +46,32 @@ module top_vga_basys3 (
      * Signals assignments
      */
 
-    assign JA1 = pclk_mirror;
+    assign JA1 = clk40MHz_mirror;
 
 
     /**
      * FPGA submodules placement
      */
 
-    clk_wiz_0 u_clk_wiz_0
+    clk_wiz_1 u_clk_wiz_1
     (
         // Clock out ports
         .clk100MHz(clk100MHz),
-        .clk40MHz(pclk),
+        .clk60MHz(clk60MHz),
+        .clk40MHz(clk40MHz),
         // Status and control signals
         .locked(locked),
         // Clock in ports
-        .clk(clk)
+        .clk_in1(clk)
     );
 
 
-    // Mirror pclk on a pin for use by the testbench;
+    // Mirror clk40MHz on a pin for use by the testbench;
     // not functionally required for this design to work.
 
-    ODDR pclk_oddr (
-        .Q(pclk_mirror),
-        .C(pclk),
+    ODDR clk40MHz_oddr (
+        .Q(clk40MHz_mirror),
+        .C(clk40MHz),
         .CE(1'b1),
         .D1(1'b1),
         .D2(1'b0),
@@ -86,7 +85,7 @@ module top_vga_basys3 (
      */
 
     top_vga u_top_vga (
-        .clk(pclk),
+        .clk(clk60MHz),
         .rst(btnC),
         .r(vgaRed),
         .g(vgaGreen),

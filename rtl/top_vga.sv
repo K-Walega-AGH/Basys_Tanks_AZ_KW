@@ -38,22 +38,26 @@ module top_vga (
     // VGA signals from background
     vga_if vga_bg();
 
+    // VGA signals from background
+    vga_if vga_terrain();
+
     // VGA signals from rectangle
     vga_if vga_rect_char();
 
-    // VGA signals from rectangle
-    vga_if vga_rect();
+    // // VGA signals from rectangle
+    // vga_if vga_rect();
 
-    // VGA signals from mouse
-    vga_if vga_mouse();
+    // // VGA signals from mouse
+    // vga_if vga_mouse();
 
-    // xpos, ypos signals
-    logic [11:0] rect_xpos, rect_ypos;
-    logic [11:0] rgb_pixel;
-    logic [11:0] pixel_addr;
-    logic [11:0] mouse_xpos, mouse_ypos;
-    logic left;
-
+    // // xpos, ypos signals
+    // logic [11:0] rect_xpos, rect_ypos;
+    // // agh image on mouse
+    // logic [11:0] rgb_pixel;
+    // logic [11:0] pixel_addr;
+    // // mouse
+    // logic [11:0] mouse_xpos, mouse_ypos;
+    // logic left;
     // font stuff
     logic [10:0] addr;
     logic [7:0] char_xy;
@@ -63,16 +67,13 @@ module top_vga (
 
     assign addr = {char_code, char_line};
 
-
     /**
      * Signals assignments
      */
-    assign vs = vga_mouse.vsync;
-    assign hs = vga_mouse.hsync;
-    assign {r,g,b} = vga_mouse.rgb;
+    assign vs = vga_rect_char.vsync;
+    assign hs = vga_rect_char.hsync;
+    assign {r,g,b} = vga_rect_char.rgb;
 
-    //assign xpos = 12'b0;
-    //assign ypos = 12'b0;
     /**
      * Submodules instances
      */
@@ -93,22 +94,16 @@ module top_vga (
         .rst(rst),
 
         .bg_in  (vga_timing),
-
         .bg_out (vga_bg)
     );
-/*
-    draw_rect_char #(.N_buf(2)) u_draw_rect_char (
+
+    draw_terrain u_draw_terrain (
         .clk(clk),
         .rst(rst),
 
-        .char_line_pixels(char_line_pixels),
-        .addr(addr),
-        
-        .rect_char_in    (vga_bg),
-        
-        .rect_char_out   (vga_rect_char)
+        .terrain_in  (vga_bg),
+        .terrain_out (vga_terrain)
     );
-*/
 
     draw_rect_char 
         #(
@@ -123,8 +118,7 @@ module top_vga (
         .char_xy(char_xy),
         .char_line(char_line),
 
-        .rect_char_in    (vga_bg),
-        
+        .rect_char_in    (vga_terrain),
         .rect_char_out   (vga_rect_char)
     );
 
@@ -139,64 +133,68 @@ module top_vga (
         .char_line_pixels(char_line_pixels)
     );
 
-    MouseCtl u_MouseCtl(
-        .clk(clk100MHz),
-        .rst(rst),
-        .value(12'b0),
-        .setx(1'b0),
-        .sety(1'b0),
-        .setmax_x(1'b0),
-        .setmax_y(1'b0),
-        .ps2_clk(ps2_clk),
-        .ps2_data(ps2_data),
-        .xpos(mouse_xpos),
-        .ypos(mouse_ypos),
-        .left(left)
-    );
+    // MouseCtl u_MouseCtl(
+    //     .clk(clk100MHz),
+    //     .rst(rst),
+    //     .value(12'b0),
+    //     .setx(1'b0),
+    //     .sety(1'b0),
+    //     .setmax_x(1'b0),
+    //     .setmax_y(1'b0),
+    //     .ps2_clk(ps2_clk),
+    //     .ps2_data(ps2_data),
+    //     .xpos(mouse_xpos),
+    //     .ypos(mouse_ypos),
+    //     .left(left)
+    // );
 
-    draw_rect_ctl u_draw_rect_ctl(
-        .clk(clk),
-        .rst(rst),
-        .xpos_in(mouse_xpos),
-        .ypos_in(mouse_ypos),
-        .left(left),
+    // draw_rect_ctl u_draw_rect_ctl(
+    //     .clk(clk),
+    //     .rst(rst),
+    //     .xpos_in(mouse_xpos),
+    //     .ypos_in(mouse_ypos),
+    //     .left(left),
     
-        .xpos_out(rect_xpos),
-        .ypos_out(rect_ypos)
-    );
+    //     .xpos_out(rect_xpos),
+    //     .ypos_out(rect_ypos)
+    // );
 
-    draw_rect #(.N_buf(2)) u_draw_rect (
-        .clk(clk),
-        .rst(rst),
+    // draw_rect_image 
+    // #(
+    //     .N_buf(2),
+    //     .WIDTH(48),
+    //     .HEIGHT(64)
+    // ) u_draw_rect (
+    //     .clk(clk),
+    //     .rst(rst),
 
-        .xpos(rect_xpos),
-        .ypos(rect_ypos),
+    //     .xpos(rect_xpos),
+    //     .ypos(rect_ypos),
 
-        .rgb_pixel(rgb_pixel),
-        .pixel_addr(pixel_addr),
+    //     .rgb_pixel(rgb_pixel),
+    //     .pixel_addr(pixel_addr),
 
 
-        .rect_in    (vga_rect_char),
+    //     .rect_image_in    (vga_rect_char),
+    //     .rect_image_out   (vga_rect)
+    // );
+
+    // image_rom u_image_rom ( 
+    //     .clk(clk),
+    //     .address(pixel_addr),  // address = {addry[5:0], addrx[5:0]}
+    //     .rgb(rgb_pixel)
+    // );
+
+    // draw_mouse u_draw_mouse (
+    //     .clk(clk),
+    //     .rst(rst),
+
+    //     .xpos(mouse_xpos),
+    //     .ypos(mouse_ypos),
+
+    //     .mouse_in    (vga_rect),
         
-        .rect_out   (vga_rect)
-    );
-
-    image_rom u_image_rom ( 
-        .clk(clk),
-        .address(pixel_addr),  // address = {addry[5:0], addrx[5:0]}
-        .rgb(rgb_pixel)
-    );
-
-    draw_mouse u_draw_mouse (
-        .clk(clk),
-        .rst(rst),
-
-        .xpos(mouse_xpos),
-        .ypos(mouse_ypos),
-
-        .mouse_in    (vga_rect),
-        
-        .mouse_out   (vga_mouse)
-    );
+    //     .mouse_out   (vga_mouse)
+    // );
 
 endmodule
