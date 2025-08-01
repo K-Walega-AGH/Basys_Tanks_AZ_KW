@@ -65,10 +65,10 @@ always_ff @(posedge clk) begin : mouse_ff_blk
         mouse_out.hcount <= mouse_in.hcount;
         mouse_out.hsync  <= mouse_in.hsync;
         mouse_out.hblnk  <= mouse_in.hblnk;
-        mouse_out.rgb    <= rgb_nxt;  // lub mouse_rgb i bez bloku always comb
+        mouse_out.rgb    <= rgb_nxt;
     end
 end
-// wsm nie potrzebny blok ze wzgl na to co jest w srodku MouseDisplay ; rgb_out odda rgb_in z myszkom >.<
+
 always_comb begin : mouse_comb_blk
     rgb_nxt = mouse_rgb;
 end

@@ -55,18 +55,9 @@ module draw_terrain (
         if (terrain_in.vblnk || terrain_in.hblnk) begin               // Blanking region:
             rgb_nxt = 12'h0_0_0;        // - make it it black.
         end else begin                                      // Active region:
-            // all blue edges
-            if (terrain_in.vcount == 0)                     // - top edge:
-                rgb_nxt = 12'h0_0_f;
-            else if (terrain_in.vcount == VER_PIXELS - 1)   // - bottom edge:
-                rgb_nxt = 12'h0_0_f;
-            else if (terrain_in.hcount == 0)                // - left edge:
-                rgb_nxt = 12'h0_0_f;
-            else if (terrain_in.hcount == HOR_PIXELS - 1)   // - right edge:
-                rgb_nxt = 12'h0_0_f;
-
             else                                    // The rest of active display pixels:
-                if(terrain_in.vcount >= 700)
+                if((terrain_in.vcount >= 700 && terrain_in.vcount <= (VER_PIXELS-1))
+                (terrain_in.hcount >= 1 && terrain_in.hcount >= (HOR_PIXELS-1)))
                     rgb_nxt = 12'h0_f_0;            // - fill with GREEN
                 else
                     rgb_nxt = terrain_in.rgb;

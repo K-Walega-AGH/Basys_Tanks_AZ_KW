@@ -78,9 +78,9 @@ module draw_bg (
     draw_rect_image 
     #(
         .N_buf(2),
-        .WIDTH(HOR_PIXELS-1),
-        .HEIGHT(VER_PIXELS-1)
-    ) bg_from_image (
+        .WIDTH(63),
+        .HEIGHT(47)
+    ) tank_from_image (
         .clk(clk),
         .rst(rst),
 
@@ -93,7 +93,7 @@ module draw_bg (
         .rect_image_in    (bg_in),
         .rect_image_out   (vga_image_bg)
     );
-    bg_rom u_bg_rom ( 
+    image_rom u_image_rom ( 
         .clk(clk),
         .address(pixel_addr),  // address = {addry[9:0], addrx[9:0]}
         .rgb(rgb_pixel)
