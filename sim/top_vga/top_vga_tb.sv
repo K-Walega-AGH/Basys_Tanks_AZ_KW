@@ -31,6 +31,8 @@ module top_vga_tb;
 
     localparam CLK_PERIOD = 25;     // 40 MHz
 
+    import vga_pkg::*;
+
     /**
      * Local variables and signals
      */
@@ -68,8 +70,8 @@ module top_vga_tb;
     );
 
     tiff_writer #(
-        .XDIM(16'd1056),
-        .YDIM(16'd628),
+        .XDIM(TOTAL_HOR_PIXELS),
+        .YDIM(TOTAL_VER_PIXELS),
         .FILE_DIR("../../results")
     ) u_tiff_writer (
         .clk(clk),
@@ -102,14 +104,14 @@ module top_vga_tb;
         $finish;
     end
 
-    initial begin
-        force dut.mouse_xpos = 12'd5;
-        force dut.mouse_ypos = 12'd5;
+    // initial begin
+    //     force dut.mouse_xpos = 12'd5;
+    //     force dut.mouse_ypos = 12'd5;
     
-        #17ms;
+    //     #17ms;
       
-        release dut.mouse_xpos;
-        release dut.mouse_ypos;
-    end
+    //     release dut.mouse_xpos;
+    //     release dut.mouse_ypos;
+    // end
 
 endmodule
