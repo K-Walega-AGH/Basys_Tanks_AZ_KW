@@ -32,6 +32,7 @@ module top_vga_tb;
     localparam CLK_PERIOD = 25;     // 40 MHz
 
     import vga_pkg::*;
+    import tank_pkg::*;
 
     /**
      * Local variables and signals
@@ -104,6 +105,10 @@ module top_vga_tb;
         $finish;
     end
 
+    initial begin
+        force dut.u_draw_tank.tank_xpos = TANK_X_INIT;
+        force dut.u_draw_tank.tank_ypos = TANK_Y_INIT;
+    end
     // initial begin
     //     force dut.mouse_xpos = 12'd5;
     //     force dut.mouse_ypos = 12'd5;

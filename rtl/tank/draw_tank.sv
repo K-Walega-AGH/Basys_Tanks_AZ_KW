@@ -7,18 +7,22 @@
  * Draw background.
  */
 
-module draw_bg (
+module draw_tank (
         input  logic clk,
         input  logic rst,
+        
+        input  logic [11:0] tank_xpos,
+        input  logic [11:0] tank_ypos,
 
-        vga_if.in_m     bg_in,
-        vga_if.out_m    bg_out
+        vga_if.in_m     tank_in,
+        vga_if.out_m    tank_out
     );
 
     timeunit 1ns;
     timeprecision 1ps;
 
     import vga_pkg::*;
+    import tank_pkg::*;
 
 
     /**
@@ -29,48 +33,38 @@ module draw_bg (
     logic [19:0] pixel_addr;
     logic [11:0] rgb_pixel;
 
-    vga_if vga_image_bg();
+    vga_if vga_image_tank();
 
     /**
      * Internal logic
      */
 
-    always_ff @(posedge clk) begin : bg_ff_blk
+    always_ff @(posedge clk) begin : tank_ff_blk
         if (rst) begin
-            bg_out.vcount <= '0;
-            bg_out.vsync  <= '0;
-            bg_out.vblnk  <= '0;
-            bg_out.hcount <= '0;
-            bg_out.hsync  <= '0;
-            bg_out.hblnk  <= '0;
-            bg_out.rgb    <= '0;
+            tank_out.vcount <= '0;
+            tank_out.vsync  <= '0;
+            tank_out.vblnk  <= '0;
+            tank_out.hcount <= '0;
+            tank_out.hsync  <= '0;
+            tank_out.hblnk  <= '0;
+            tank_out.rgb    <= '0;
         end else begin
-            bg_out.vcount <= vga_image_bg.vcount;
-            bg_out.vsync  <= vga_image_bg.vsync;
-            bg_out.vblnk  <= vga_image_bg.vblnk;
-            bg_out.hcount <= vga_image_bg.hcount;
-            bg_out.hsync  <= vga_image_bg.hsync;
-            bg_out.hblnk  <= vga_image_bg.hblnk;
-            bg_out.rgb    <= rgb_nxt;
+            tank_out.vcount <= vga_image_tank.vcount;
+            tank_out.vsync  <= vga_image_tank.vsync;
+            tank_out.vblnk  <= vga_image_tank.vblnk;
+            tank_out.hcount <= vga_image_tank.hcount;
+            tank_out.hsync  <= vga_image_tank.hsync;
+            tank_out.hblnk  <= vga_image_tank.hblnk;
+            tank_out.rgb    <= rgb_nxt;
         end
     end
 
-    always_comb begin : bg_comb_blk
-        if (vga_image_bg.vblnk || vga_image_bg.hblnk) begin               // Blanking region:
-            rgb_nxt = 12'h0_0_0;        // - make it it black.
-        end else begin                                      // Active region:
-            // all blue edges
-            if (vga_image_bg.vcount == 0)                     // - top edge:
-                rgb_nxt = 12'h0_0_f;
-            else if (vga_image_bg.vcount == VER_PIXELS - 1)   // - bottom edge:
-                rgb_nxt = 12'h0_0_f;
-            else if (vga_image_bg.hcount == 0)                // - left edge:
-                rgb_nxt = 12'h0_0_f;
-            else if (vga_image_bg.hcount == HOR_PIXELS - 1)   // - right edge:
-                rgb_nxt = 12'h0_0_f;
-
-            else                                    // The rest of active display pixels:
-                rgb_nxt = vga_image_bg.rgb;            // - fill with IMAGE
+    always_comb begin : tank_comb_blk
+        if(vga_image_tank.rgb == 12'h0_0_0) begin
+            rgb_nxt = tank_in.rgb;          // - fill with BACKGROUND
+        end else begin
+            rgb_nxt = vga_image_tank.rgb;   // - fill with IMAGE
+            
         end
     end
 
@@ -78,22 +72,22 @@ module draw_bg (
     draw_rect_image 
     #(
         .N_buf(2),
-        .WIDTH(63),
-        .HEIGHT(47)
+        .WIDTH(TANK_WIDTH-1),
+        .HEIGHT(TANK_HEIGHT-1)
     ) tank_from_image (
         .clk(clk),
         .rst(rst),
 
-        .xpos(12'b0),
-        .ypos(12'b0),
+        .xpos(tank_xpos),
+        .ypos(tank_ypos),
 
         .rgb_pixel(rgb_pixel),
         .pixel_addr(pixel_addr),
         
-        .rect_image_in    (bg_in),
-        .rect_image_out   (vga_image_bg)
+        .rect_image_in    (tank_in),
+        .rect_image_out   (vga_image_tank)
     );
-    image_rom u_image_rom ( 
+    tank_rom u_tank_rom ( 
         .clk(clk),
         .address(pixel_addr),  // address = {addry[9:0], addrx[9:0]}
         .rgb(rgb_pixel)

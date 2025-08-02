@@ -15,7 +15,7 @@
 
 module image_rom (
         input  logic clk ,
-        input  logic [11:0] address,  // address = {addry[5:0], addrx[5:0]}
+        input  logic [19:0] address,  // address = {addry[9:0], addrx[9:0]}
         output logic [11:0] rgb
     );
 

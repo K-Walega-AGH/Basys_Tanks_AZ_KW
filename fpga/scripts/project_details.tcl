@@ -43,11 +43,14 @@ set sv_files {
     ../rtl/draw_bg_terrain/draw_rect_char.sv
     ../rtl/draw_bg_terrain/draw_rect_image.sv
     ../rtl/draw_bg_terrain/draw_rect_ctl.sv
+    ../rtl/draw_bg_terrain/draw_mouse.sv
     ../rtl/rom/char_rom.sv
     ../rtl/rom/font_rom.sv
     ../rtl/rom/image_rom.sv
     ../rtl/rom/bg_rom.sv
-    ../rtl/draw_bg_terrain/draw_mouse.sv
+    ../rtl/tank/draw_tank.sv
+    ../rtl/tank/tank_ctl.sv
+    ../rtl/tank/tank_pkg.sv
     ../rtl/top_vga.sv
     rtl/top_vga_basys3.sv
 }
@@ -69,7 +72,5 @@ set vhdl_files {
 
 # Specify files for a memory initialization     -- EDIT
 set mem_files {
-   ../rtl/data_files/image_rom.data
-   ../rtl/data_files/bg_files/bg1_rom.data
-   ../rtl/data_files/bg_files/bg2_rom.data
+
 }

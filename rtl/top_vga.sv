@@ -34,15 +34,14 @@ module top_vga (
 
     // VGA signals from timing
     vga_if vga_timing();
-
     // VGA signals from background
     vga_if vga_bg();
-
     // VGA signals from background
     vga_if vga_terrain();
-
-    // VGA signals from rectangle
-    vga_if vga_rect_char();
+    // VGA signals from display characters
+    vga_if vga_char();
+    // VGA signals from tank
+    vga_if vga_tank();
 
     // // VGA signals from rectangle
     // vga_if vga_rect();
@@ -70,9 +69,9 @@ module top_vga (
     /**
      * Signals assignments
      */
-    assign vs = vga_rect_char.vsync;
-    assign hs = vga_rect_char.hsync;
-    assign {r,g,b} = vga_rect_char.rgb;
+    assign vs = vga_tank.vsync;
+    assign hs = vga_tank.hsync;
+    assign {r,g,b} = vga_tank.rgb;
 
     /**
      * Submodules instances
@@ -119,7 +118,7 @@ module top_vga (
         .char_line(char_line),
 
         .rect_char_in    (vga_terrain),
-        .rect_char_out   (vga_rect_char)
+        .rect_char_out   (vga_char)
     );
 
     char_rom u_char_rom (
@@ -131,6 +130,14 @@ module top_vga (
         .clk(clk),
         .addr(addr),
         .char_line_pixels(char_line_pixels)
+    );
+
+    draw_tank u_draw_tank (
+        .clk(clk),
+        .rst(rst),
+
+        .tank_in  (vga_char),
+        .tank_out (vga_tank)
     );
 
     // MouseCtl u_MouseCtl(
@@ -175,7 +182,7 @@ module top_vga (
     //     .pixel_addr(pixel_addr),
 
 
-    //     .rect_image_in    (vga_rect_char),
+    //     .rect_image_in    (vga_char),
     //     .rect_image_out   (vga_rect)
     // );
 

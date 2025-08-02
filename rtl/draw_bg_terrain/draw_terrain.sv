@@ -52,16 +52,11 @@ module draw_terrain (
     end
 
     always_comb begin : terrain_comb_blk
-        if (terrain_in.vblnk || terrain_in.hblnk) begin               // Blanking region:
-            rgb_nxt = 12'h0_0_0;        // - make it it black.
-        end else begin                                      // Active region:
-            else                                    // The rest of active display pixels:
-                if((terrain_in.vcount >= 700 && terrain_in.vcount <= (VER_PIXELS-1))
-                (terrain_in.hcount >= 1 && terrain_in.hcount >= (HOR_PIXELS-1)))
-                    rgb_nxt = 12'h0_f_0;            // - fill with GREEN
-                else
-                    rgb_nxt = terrain_in.rgb;
-        end
+        if((terrain_in.vcount >= 700 && terrain_in.vcount < VER_PIXELS-1) 
+        && (terrain_in.hcount >= 1 && terrain_in.hcount < HOR_PIXELS-1))
+            rgb_nxt = 12'h0_f_0;            // - fill with GREEN
+        else
+            rgb_nxt = terrain_in.rgb;
     end
 
 

@@ -1,5 +1,5 @@
 
-module bg_rom (
+module tank_rom (
     input  logic clk,
     input  logic [19:0] address,  // address = {addry[9:0], addrx[9:0]}
     output logic [11:0] rgb
@@ -17,7 +17,7 @@ reg [11:0] rom [0:16_383];    // 128x128 for BRAM
  */
 
 /* Relative path from the simulation or synthesis working directory */
-initial $readmemh("../../rtl/data_files/bg_files/bg3_rom.data", rom);
+initial $readmemh("../../rtl/data_files/tank.data", rom);
 
 /**
  * Internal logic
