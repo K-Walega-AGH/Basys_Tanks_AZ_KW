@@ -9,8 +9,8 @@ module tank_ctl (
     input  logic       fire_active,     // Fire bullet input was pressed, start increasing the power
     input  logic       your_turn,       // signal for your turn to fight
 
-    output logic [9:0] tank_xpos,
-    output logic [9:0] tank_ypos
+    output logic [11:0] tank_xpos,
+    output logic [11:0] tank_ypos
 );
 
     timeunit 1ns;
@@ -20,7 +20,7 @@ module tank_ctl (
     import tank_pkg::*;
 
     // Tank FSM states
-    typedef enum logic [1:0] {
+    typedef enum logic [2:0] {
         IDLE,
         MOVING,
         PREP_BULLET,
@@ -31,25 +31,25 @@ module tank_ctl (
     tank_state tank_st, tank_st_nxt;
 
     // tank local position
-    logic [9:0] xpos, xpos_nxt;
-    logic [9:0] ypos, ypos_nxt;
+    logic [11:0] xpos, xpos_nxt;
+    logic [11:0] ypos, ypos_nxt;
     // tank fuel
-    logic [6:0] fuel;
+    logic [6:0] fuel, fuel_nxt;
 
     assign tank_xpos = xpos;
     assign tank_ypos = ypos;
     // xxxx
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
-            xpos   <= TANK_X_INIT;
-            ypos   <= TANK_Y_INIT;
-            xpos_nxt   <= TANK_X_INIT;
-            ypos_nxt   <= TANK_Y_INIT;
-
-            fuel <= MAX_FUEL;
-            tank_st    <= IDLE;
+            xpos    <= TANK_X_INIT;
+            ypos    <= TANK_Y_INIT;
+            xpos_nxt    <= TANK_X_INIT;
+            ypos_nxt    <= TANK_Y_INIT;
+            fuel        <= MAX_FUEL;
+            fuel_nxt    <= MAX_FUEL;
+            tank_st     <= WAITING; // ONLY FOR TESTBENCH, then IDLE
         end else begin
-            tank_st    <= tank_st_nxt;
+            tank_st <= tank_st_nxt;
             case(tank_st)
                 IDLE: begin
                     // player thinking...
@@ -58,7 +58,7 @@ module tank_ctl (
                 MOVING: begin
                     // check fuel
                     if(fuel > 0) begin
-                        fuel <= fuel - MOVE_STEP;
+                        fuel_nxt <= fuel - MOVE_STEP;
                         //check map border
                         if((xpos > 0) && (xpos <= (HOR_PIXELS - TANK_WIDTH))) begin  
                             if (moving[1]) begin    // RIGHT
@@ -97,6 +97,7 @@ module tank_ctl (
                 end
             endcase
 
+            fuel <= fuel_nxt;
             xpos <= xpos_nxt;
             ypos <= ypos_nxt; // na razie jest plaski teren wiec nie ma znaczneia
         end
@@ -105,7 +106,6 @@ module tank_ctl (
     // SM logic
     always_comb begin
         tank_st_nxt = tank_st;
-        xpos_nxt    = xpos;
 
         case (tank_st)
             IDLE: begin

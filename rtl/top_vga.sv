@@ -57,6 +57,10 @@ module top_vga (
     // // mouse
     // logic [11:0] mouse_xpos, mouse_ypos;
     // logic left;
+    // tank movement and action
+    logic [11:0] tank_xpos, tank_ypos;
+    logic [1:0] moving;
+    logic fire_active, your_turn;
     // font stuff
     logic [10:0] addr;
     logic [7:0] char_xy;
@@ -141,18 +145,33 @@ module top_vga (
 
 
     tank_move u_tank_move(
+        .tank_xpos_in(tank_xpos),
+        .tank_ypos_in(tank_ypos),
 
-        .tank_xpos_out(move_tank_to_draw_tank_xpos),
-        .tank_ypos_out(move_tank_to_draw_tank_ypos)
+        .tank_xpos_out(),   //this outpur will go to draw_tank ; disconected for now
+        .tank_ypos_out()
     );
 
     draw_tank u_draw_tank (
         .clk(clk),
         .rst(rst),
-        .tank_xpos(move_tank_to_draw_tank_xpos),
-        .tank_ypos(move_tank_to_draw_tank_ypos),
+
+        .tank_xpos(tank_xpos),
+        .tank_ypos(tank_ypos),
+
         .tank_in  (vga_char),
         .tank_out (vga_tank)
+    );
+    tank_ctl u_tank_ctl(
+        .clk(clk),
+        .rst(rst),
+    
+        .moving(moving),
+        .fire_active(fire_active),
+        .your_turn(your_turn),
+    
+        .tank_xpos(tank_xpos),
+        .tank_ypos(tank_ypos)
     );
 
     // MouseCtl u_MouseCtl(

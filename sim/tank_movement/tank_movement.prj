@@ -1,0 +1,28 @@
+
+# tank movement testbench
+
+sv work ../../rtl/vga/vga_if.sv \
+        ../../rtl/vga/vga_pkg.sv \
+        ../../rtl/vga/vga_timing.sv \
+        ../../rtl/delay.sv \
+        ../../rtl/draw_bg_terrain/draw_bg.sv \
+        ../../rtl/draw_bg_terrain/draw_terrain.sv \
+        ../../rtl/draw_bg_terrain/draw_rect_char.sv \
+        ../../rtl/draw_bg_terrain/draw_rect_image.sv \
+        ../../rtl/draw_bg_terrain/draw_rect_ctl.sv \
+        ../../rtl/draw_bg_terrain/draw_mouse.sv \
+        ../../rtl/rom/bg_rom.sv \
+        ../../rtl/rom/tank_rom.sv \
+        ../../rtl/rom/char_rom.sv \
+        ../../rtl/rom/font_rom.sv \
+        ../../rtl/rom/image_rom.sv \
+        ../../rtl/tank/tank_pkg.sv \
+        ../../rtl/tank/draw_tank.sv \
+        ../../rtl/tank/tank_ctl.sv \
+        ../../rtl/top_vga.sv \
+        ../common/tiff_writer.sv \
+        tank_movement_tb.sv
+
+vhdl work ../../rtl/mouse/Ps2Interface.vhd \
+          ../../rtl/mouse/MouseCtl.vhd \
+          ../../rtl/mouse/MouseDisplay.vhd
