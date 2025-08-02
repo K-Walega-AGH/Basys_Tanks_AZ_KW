@@ -19,7 +19,7 @@ module draw_terrain (
     timeprecision 1ps;
 
     import vga_pkg::*;
-
+  
 
     /**
      * Local variables and signals

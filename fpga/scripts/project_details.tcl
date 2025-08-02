@@ -48,9 +48,11 @@ set sv_files {
     ../rtl/rom/font_rom.sv
     ../rtl/rom/image_rom.sv
     ../rtl/rom/bg_rom.sv
+    ../rtl/rom/tank_rom.sv
     ../rtl/tank/draw_tank.sv
     ../rtl/tank/tank_ctl.sv
     ../rtl/tank/tank_pkg.sv
+    ../rtl/tank/tank_move.sv
     ../rtl/top_vga.sv
     rtl/top_vga_basys3.sv
 }
@@ -71,6 +73,6 @@ set vhdl_files {
 }
 
 # Specify files for a memory initialization     -- EDIT
-set mem_files {
-
-}
+#set mem_files {
+#
+#}

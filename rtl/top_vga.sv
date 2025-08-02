@@ -64,6 +64,13 @@ module top_vga (
     logic [3:0] char_line;
     logic [7:0] char_line_pixels;
 
+    /*
+     * tank moving wires
+     */
+    logic [11:0] move_tank_to_draw_tank_xpos;
+    logic [11:0] move_tank_to_draw_tank_ypos;
+
+
     assign addr = {char_code, char_line};
 
     /**
@@ -132,10 +139,18 @@ module top_vga (
         .char_line_pixels(char_line_pixels)
     );
 
+
+    tank_move u_tank_move(
+
+        .tank_xpos_out(move_tank_to_draw_tank_xpos),
+        .tank_ypos_out(move_tank_to_draw_tank_ypos)
+    );
+
     draw_tank u_draw_tank (
         .clk(clk),
         .rst(rst),
-
+        .tank_xpos(move_tank_to_draw_tank_xpos),
+        .tank_ypos(move_tank_to_draw_tank_ypos),
         .tank_in  (vga_char),
         .tank_out (vga_tank)
     );
