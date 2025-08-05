@@ -2,7 +2,7 @@
 // it existes to takes all the information in consider of movement of tank
 
 module tank_move (
-        input  logic clk,
+        input  logic clk,   // nie wiem czy clk i rst tu bedzie potrzebny - mozliwe ze ten modul bedzie kombinacyjny (chyba nie wsm) 
         input  logic rst,
         
         input  logic [11:0] tank_xpos_in,

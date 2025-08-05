@@ -49,18 +49,13 @@ module top_vga (
     // // VGA signals from mouse
     // vga_if vga_mouse();
 
-    // // xpos, ypos signals
-    // logic [11:0] rect_xpos, rect_ypos;
-    // // agh image on mouse
-    // logic [11:0] rgb_pixel;
-    // logic [11:0] pixel_addr;
-    // // mouse
-    // logic [11:0] mouse_xpos, mouse_ypos;
-    // logic left;
     // tank movement and action
     logic [11:0] tank_xpos, tank_ypos;
     logic [1:0] moving;
     logic fire_active, your_turn;
+    // tank_move wires
+    // logic [11:0] move_tank_to_draw_tank_xpos;
+    // logic [11:0] move_tank_to_draw_tank_ypos;
     // font stuff
     logic [10:0] addr;
     logic [7:0] char_xy;
@@ -68,21 +63,14 @@ module top_vga (
     logic [3:0] char_line;
     logic [7:0] char_line_pixels;
 
-    /*
-     * tank moving wires
-     */
-    logic [11:0] move_tank_to_draw_tank_xpos;
-    logic [11:0] move_tank_to_draw_tank_ypos;
-
-
-    assign addr = {char_code, char_line};
-
     /**
      * Signals assignments
      */
     assign vs = vga_tank.vsync;
     assign hs = vga_tank.hsync;
     assign {r,g,b} = vga_tank.rgb;
+    //char_addr assignment
+    assign addr = {char_code, char_line};
 
     /**
      * Submodules instances
@@ -144,14 +132,6 @@ module top_vga (
     );
 
 
-    tank_move u_tank_move(
-        .tank_xpos_in(tank_xpos),
-        .tank_ypos_in(tank_ypos),
-
-        .tank_xpos_out(),   //this outpur will go to draw_tank ; disconected for now
-        .tank_ypos_out()
-    );
-
     draw_tank u_draw_tank (
         .clk(clk),
         .rst(rst),
@@ -173,69 +153,15 @@ module top_vga (
         .tank_xpos(tank_xpos),
         .tank_ypos(tank_ypos)
     );
-
-    // MouseCtl u_MouseCtl(
-    //     .clk(clk100MHz),
-    //     .rst(rst),
-    //     .value(12'b0),
-    //     .setx(1'b0),
-    //     .sety(1'b0),
-    //     .setmax_x(1'b0),
-    //     .setmax_y(1'b0),
-    //     .ps2_clk(ps2_clk),
-    //     .ps2_data(ps2_data),
-    //     .xpos(mouse_xpos),
-    //     .ypos(mouse_ypos),
-    //     .left(left)
-    // );
-
-    // draw_rect_ctl u_draw_rect_ctl(
-    //     .clk(clk),
-    //     .rst(rst),
-    //     .xpos_in(mouse_xpos),
-    //     .ypos_in(mouse_ypos),
-    //     .left(left),
-    
-    //     .xpos_out(rect_xpos),
-    //     .ypos_out(rect_ypos)
-    // );
-
-    // draw_rect_image 
-    // #(
-    //     .N_buf(2),
-    //     .WIDTH(48),
-    //     .HEIGHT(64)
-    // ) u_draw_rect (
-    //     .clk(clk),
-    //     .rst(rst),
-
-    //     .xpos(rect_xpos),
-    //     .ypos(rect_ypos),
-
-    //     .rgb_pixel(rgb_pixel),
-    //     .pixel_addr(pixel_addr),
-
-
-    //     .rect_image_in    (vga_char),
-    //     .rect_image_out   (vga_rect)
-    // );
-
-    // image_rom u_image_rom ( 
-    //     .clk(clk),
-    //     .address(pixel_addr),  // address = {addry[5:0], addrx[5:0]}
-    //     .rgb(rgb_pixel)
-    // );
-
-    // draw_mouse u_draw_mouse (
-    //     .clk(clk),
-    //     .rst(rst),
-
-    //     .xpos(mouse_xpos),
-    //     .ypos(mouse_ypos),
-
-    //     .mouse_in    (vga_rect),
+    tank_move u_tank_move(
+        .clk(clk),
+        .rst(rst),
         
-    //     .mouse_out   (vga_mouse)
-    // );
+        .tank_xpos_in(tank_xpos),
+        .tank_ypos_in(tank_ypos),
+
+        .tank_xpos_out(),   //this outpur will go to draw_tank ; disconected for now
+        .tank_ypos_out()
+    );
 
 endmodule

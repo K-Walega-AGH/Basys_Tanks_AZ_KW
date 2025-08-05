@@ -17,7 +17,7 @@ reg [11:0] rom [0:16_383];    // 128x128 for BRAM
  */
 
 /* Relative path from the simulation or synthesis working directory */
-initial $readmemh("../../rtl/data_files/bg_files/bg3_rom.data", rom);
+initial $readmemh("../../rtl/data_files/bg_rom.data", rom);
 
 /**
  * Internal logic

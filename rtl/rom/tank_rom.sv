@@ -5,15 +5,16 @@ module tank_rom (
     output logic [11:0] rgb
 );
 
+import tank_pkg::*;
 
 /**
  * Local variables and signals
  */
 
-reg [11:0] rom [0:16_383];    // 128x128 for BRAM
+reg [11:0] rom [0:(TANK_WIDTH*TANK_HEIGHT - 1)];
 
 /**
- * Memory    ization from a file
+ * Memory initialization from a file
  */
 
 /* Relative path from the simulation or synthesis working directory */
@@ -24,7 +25,7 @@ initial $readmemh("../../rtl/data_files/tank.data", rom);
  */
 
 always_ff @(posedge clk) begin
-    rgb <= rom[{address[16:10],address[6:0]}];
+    rgb <= rom[{address[15:10],address[5:0]}];  //if tank size changes this also needs to be updated
 end
 
 endmodule

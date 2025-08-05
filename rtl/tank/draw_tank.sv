@@ -60,11 +60,10 @@ module draw_tank (
     end
 
     always_comb begin : tank_comb_blk
-        if(vga_image_tank.rgb == 12'h0_0_0) begin
+        if(vga_image_tank.rgb == 12'hf_f_f) begin
             rgb_nxt = tank_in.rgb;          // - fill with BACKGROUND
         end else begin
-            rgb_nxt = vga_image_tank.rgb;   // - fill with IMAGE
-            
+            rgb_nxt = vga_image_tank.rgb;   // - fill with IMAGE  
         end
     end
 

@@ -2,12 +2,12 @@
  package tank_pkg;
 
     // image parameters
-    localparam TANK_WIDTH  = 128;
-    localparam TANK_HEIGHT = 128;
-    localparam TANK_REAL_HEIGHT = 50;
+    localparam TANK_WIDTH  = 64;
+    localparam TANK_HEIGHT = 64;
+    localparam TANK_REAL_HEIGHT = 32;
     // tank init position
     localparam TANK_X_INIT = 100;
-    localparam TANK_Y_INIT = 572;
+    localparam TANK_Y_INIT = 700 - TANK_HEIGHT;
     // movement constants
     localparam MAX_FUEL = 100;
     localparam MOVE_STEP = 1;
