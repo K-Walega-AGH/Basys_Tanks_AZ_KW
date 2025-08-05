@@ -16,9 +16,14 @@ sv work ../../rtl/vga/vga_if.sv \
         ../../rtl/rom/image_rom.sv \
         ../../rtl/rom/bg_rom.sv \
         ../../rtl/rom/tank_rom.sv \
+        ../../rtl/rom/barrel_rom.sv \
         ../../rtl/tank/draw_tank.sv \
         ../../rtl/tank/tank_ctl.sv \
         ../../rtl/tank/tank_move.sv \
+        ../../rtl/tank/draw_barrel.sv \
+        ../../rtl/tank/barrel_ctl.sv \
+        ../../rtl/tank/tank.sv \
+        ../../rtl/tank/barrel.sv \
         ../../rtl/top_vga.sv \
         ../common/tiff_writer.sv \
         tank_movement_tb.sv

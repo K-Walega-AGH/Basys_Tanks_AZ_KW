@@ -50,8 +50,7 @@ module top_vga (
     // vga_if vga_mouse();
 
     // tank movement and action
-    logic [11:0] tank_xpos, tank_ypos;
-    logic [1:0] moving;
+    logic [1:0] moving, change_angle;
     logic fire_active, your_turn;
     // tank_move wires
     // logic [11:0] move_tank_to_draw_tank_xpos;
@@ -66,9 +65,9 @@ module top_vga (
     /**
      * Signals assignments
      */
-    assign vs = vga_tank.vsync;
-    assign hs = vga_tank.hsync;
-    assign {r,g,b} = vga_tank.rgb;
+    assign vs = vga_char.vsync;
+    assign hs = vga_char.hsync;
+    assign {r,g,b} = vga_char.rgb;
     //char_addr assignment
     assign addr = {char_code, char_line};
 
@@ -116,7 +115,7 @@ module top_vga (
         .char_xy(char_xy),
         .char_line(char_line),
 
-        .rect_char_in    (vga_terrain),
+        .rect_char_in    (vga_tank),
         .rect_char_out   (vga_char)
     );
 
@@ -131,37 +130,18 @@ module top_vga (
         .char_line_pixels(char_line_pixels)
     );
 
-
-    draw_tank u_draw_tank (
+    tank u_tank_LEFT (
         .clk(clk),
         .rst(rst),
 
-        .tank_xpos(tank_xpos),
-        .tank_ypos(tank_ypos),
-
-        .tank_in  (vga_char),
-        .tank_out (vga_tank)
-    );
-    tank_ctl u_tank_ctl(
-        .clk(clk),
-        .rst(rst),
-    
         .moving(moving),
+        .change_angle(change_angle),
         .fire_active(fire_active),
         .your_turn(your_turn),
-    
-        .tank_xpos(tank_xpos),
-        .tank_ypos(tank_ypos)
-    );
-    tank_move u_tank_move(
-        .clk(clk),
-        .rst(rst),
-        
-        .tank_xpos_in(tank_xpos),
-        .tank_ypos_in(tank_ypos),
 
-        .tank_xpos_out(),   //this outpur will go to draw_tank ; disconected for now
-        .tank_ypos_out()
+        .tank_in  (vga_terrain),
+        .tank_out (vga_tank)
     );
+
 
 endmodule

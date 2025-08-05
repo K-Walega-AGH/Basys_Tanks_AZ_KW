@@ -1,11 +1,3 @@
-/**
- * Copyright (C) 2025  AGH University of Science and Technology
- * MTM UEC2
- * Author: Antoni Zasadni
- *
- * Description:
- * Draw background.
- */
 
 module draw_tank (
         input  logic clk,

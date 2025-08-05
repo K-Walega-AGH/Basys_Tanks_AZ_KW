@@ -1,11 +1,12 @@
+
 module tank_ctl (
     input  logic clk,
     input  logic rst,
 
-    input  logic [1:0] moving,      
     // moving[0] = 1 <== Moving input is pressed(left OR right);
     // moving[1] = 0 <== move LEFT
     // moving[1] = 1 <== move RIGHT
+    input  logic [1:0] moving,      
     input  logic       fire_active,     // Fire bullet input was pressed, start increasing the power
     input  logic       your_turn,       // signal for your turn to fight
 
@@ -38,7 +39,7 @@ module tank_ctl (
 
     assign tank_xpos = xpos;
     assign tank_ypos = ypos;
-    // xxxx
+    // state in action
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
             xpos    <= TANK_X_INIT;
@@ -105,8 +106,6 @@ module tank_ctl (
 
     // SM logic
     always_comb begin
-        tank_st_nxt = tank_st;
-
         case (tank_st)
             IDLE: begin
                 if (fire_active)

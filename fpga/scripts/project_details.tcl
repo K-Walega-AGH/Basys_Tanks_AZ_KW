@@ -34,47 +34,40 @@ set xdc_files {
 
 # Specify SystemVerilog design files location   -- EDIT
 set sv_files {
-    # interfaces
     ../rtl/vga/vga_if.sv
-    # packages
     ../rtl/vga/vga_pkg.sv
     ../rtl/tank/tank_pkg.sv
-    # delay
     ../rtl/delay.sv
-    # vga timing
     ../rtl/vga/vga_timing.sv
-    # background
     ../rtl/background/draw_bg.sv
-    # terrain
     ../rtl/terrain/draw_terrain.sv
-    #draw an image
     ../rtl/draw_img/draw_rect_char.sv
     ../rtl/draw_img/draw_rect_image.sv
     ../rtl/draw_img/draw_rect_ctl.sv
-    # roms
     ../rtl/rom/char_rom.sv
     ../rtl/rom/font_rom.sv
     ../rtl/rom/image_rom.sv
     ../rtl/rom/bg_rom.sv
     ../rtl/rom/tank_rom.sv
-    # tank
+    ../rtl/rom/barrel_rom.sv
     ../rtl/tank/draw_tank.sv
     ../rtl/tank/tank_ctl.sv
     ../rtl/tank/tank_move.sv
-
+    ../rtl/tank/draw_barrel.sv
+    ../rtl/tank/barrel_ctl.sv
+    ../rtl/tank/tank.sv
+    ../rtl/tank/barrel.sv
+    ../rtl/top_vga.sv
+    rtl/top_vga_basys3.sv
+}
     #planned for ->tank
-    # ../rtl/tank/draw_barrel.sv
-    # ../rtl/tank/barrel_ctl.sv
+
     #planned for ->projectile
     # ../rtl/projectile/projectile_pkg.sv
     # ../rtl/projectile/draw_projectile.sv
     # ../rtl/projectile/projectile_ctl.sv
     # ../rtl/data_files/projectile_rom.data
     # ../rtl/rom/projectile_rom.sv
-
-    ../rtl/top_vga.sv
-    rtl/top_vga_basys3.sv
-}
 
 # Specify Verilog design files location         -- EDIT
 set verilog_files {
@@ -85,11 +78,9 @@ set verilog_files {
 }
 
 # Specify VHDL design files location            -- EDIT
-set vhdl_files {
-   ../rtl/mouse/Ps2Interface.vhd
-   ../rtl/mouse/MouseCtl.vhd
-   ../rtl/mouse/MouseDisplay.vhd
-}
+# set vhdl_files {
+
+# }
 
 # Specify files for a memory initialization     -- EDIT
 #set mem_files {

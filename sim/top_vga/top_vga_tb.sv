@@ -106,17 +106,8 @@ module top_vga_tb;
     end
 
     initial begin
-        force dut.u_draw_tank.tank_xpos = TANK_X_INIT;
-        force dut.u_draw_tank.tank_ypos = TANK_Y_INIT;
+        force dut.u_tank_LEFT.tank_xpos = TANK_X_INIT;
+        force dut.u_tank_LEFT.tank_ypos = TANK_Y_INIT;
     end
-    // initial begin
-    //     force dut.mouse_xpos = 12'd5;
-    //     force dut.mouse_ypos = 12'd5;
-    
-    //     #17ms;
-      
-    //     release dut.mouse_xpos;
-    //     release dut.mouse_ypos;
-    // end
 
 endmodule
