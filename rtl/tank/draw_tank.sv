@@ -21,7 +21,7 @@ module draw_tank (
      * Local variables and signals
      */
 
-    logic [11:0] rgb_nxt;
+    logic [11:0] rgb_nxt, tank_in_d_rgb;
     logic [19:0] pixel_addr;
     logic [11:0] rgb_pixel;
 
@@ -40,6 +40,8 @@ module draw_tank (
             tank_out.hsync  <= '0;
             tank_out.hblnk  <= '0;
             tank_out.rgb    <= '0;
+
+            tank_in_d_rgb   <= '0;
         end else begin
             tank_out.vcount <= vga_image_tank.vcount;
             tank_out.vsync  <= vga_image_tank.vsync;
@@ -48,12 +50,14 @@ module draw_tank (
             tank_out.hsync  <= vga_image_tank.hsync;
             tank_out.hblnk  <= vga_image_tank.hblnk;
             tank_out.rgb    <= rgb_nxt;
+
+            tank_in_d_rgb   <= tank_in.rgb;     //delay rgb for 1 cycle for smooth background
         end
     end
 
     always_comb begin : tank_comb_blk
         if(vga_image_tank.rgb == 12'hf_f_f) begin
-            rgb_nxt = tank_in.rgb;          // - fill with BACKGROUND
+            rgb_nxt = tank_in_d_rgb;          // - fill with BACKGROUND
         end else begin
             rgb_nxt = vga_image_tank.rgb;   // - fill with IMAGE  
         end
@@ -63,8 +67,8 @@ module draw_tank (
     draw_rect_image 
     #(
         .N_buf(2),
-        .WIDTH(TANK_WIDTH-1),
-        .HEIGHT(TANK_HEIGHT-1)
+        .WIDTH(TANK_WIDTH),
+        .HEIGHT(TANK_HEIGHT)
     ) tank_from_image (
         .clk(clk),
         .rst(rst),

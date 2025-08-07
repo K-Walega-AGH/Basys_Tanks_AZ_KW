@@ -1,6 +1,3 @@
-/*
- * Module Author: Kacper Wałęga
- */
 module ps2_keyboard (
     input  logic clk100MHz,
     input  logic rst,

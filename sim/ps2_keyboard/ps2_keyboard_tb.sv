@@ -1,6 +1,4 @@
-/*
- * Module Author: Antoni Zasadni
- */
+
 
 module ps2_keyboard_tb;
 

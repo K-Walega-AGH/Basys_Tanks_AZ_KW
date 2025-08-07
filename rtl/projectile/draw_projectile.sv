@@ -72,8 +72,8 @@ module draw_projectile (
     draw_rect_image 
     #(
         .N_buf(2),
-        .WIDTH(PROJECTILE_WIDTH-1),
-        .HEIGHT(PROJECTILE_HEIGHT-1)
+        .WIDTH(PROJECTILE_WIDTH),
+        .HEIGHT(PROJECTILE_HEIGHT)
     ) projectile_from_image (
         .clk(clk),
         .rst(rst),

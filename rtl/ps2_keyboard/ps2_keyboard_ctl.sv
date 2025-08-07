@@ -1,7 +1,3 @@
-/*
- * Module Author: Kacper Wałęga
- * 
- */
 module keyboard_ctl (
     input  logic clk,
     input  logic rst,

@@ -76,12 +76,12 @@ always_comb begin : rect_comb_blk
         pixel_nxt = '0;
     end else begin                              // Active region:
         // draw rectangle
-        if (d_rect_image_in.hcount >= d_xpos && d_rect_image_in.hcount < (d_xpos + WIDTH)      // horizontal limits
-        && d_rect_image_in.vcount >= d_ypos && d_rect_image_in.vcount < (d_ypos + HEIGHT))     // vertical limits
+        if (d_rect_image_in.hcount >= d_xpos && d_rect_image_in.hcount < (d_xpos + WIDTH + N_buf - 1)      // horizontal limits
+        && d_rect_image_in.vcount >= d_ypos && d_rect_image_in.vcount < (d_ypos + HEIGHT + N_buf - 1))     // vertical limits
         begin
             rgb_nxt = rgb_pixel;                // IMAGE RGB
             local_y = d_rect_image_in.vcount - d_ypos;
-            local_x = d_rect_image_in.hcount - d_xpos + N_buf;
+            local_x = d_rect_image_in.hcount - d_xpos;
             pixel_nxt = {local_y[9:0], local_x[9:0]};   // [9:0] for 1024x1024
         end else begin                          // The rest of active display pixels:
             rgb_nxt = rect_image_in.rgb;              // - fill with BACKGROUND.

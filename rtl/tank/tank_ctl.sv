@@ -35,7 +35,9 @@ module tank_ctl (
     logic [11:0] xpos, xpos_nxt;
     logic [11:0] ypos, ypos_nxt;
     // tank fuel
-    logic [6:0] fuel, fuel_nxt;
+    logic [10:0] fuel, fuel_nxt;
+    // delay for movement
+    logic [19:0] delay_ctr;
 
     assign tank_xpos = xpos;
     assign tank_ypos = ypos;
@@ -48,36 +50,49 @@ module tank_ctl (
             ypos_nxt    <= TANK_Y_INIT;
             fuel        <= MAX_FUEL;
             fuel_nxt    <= MAX_FUEL;
-            tank_st     <= WAITING; // ONLY FOR TESTBENCH, then IDLE
+            delay_ctr   <= '0;
+
+            tank_st     <= IDLE;
         end else begin
-            tank_st <= tank_st_nxt;
             case(tank_st)
                 IDLE: begin
                     // player thinking...
                 end
 
                 MOVING: begin
-                    // check fuel
-                    if(fuel > 0) begin
-                        fuel_nxt <= fuel - MOVE_STEP;
-                        //check map border
-                        if((xpos > 0) && (xpos <= (HOR_PIXELS - TANK_WIDTH))) begin  
-                            if (moving[1]) begin    // RIGHT
-                                xpos_nxt <= xpos + MOVE_STEP;
-                                ypos_nxt <= ypos;
-                            end else begin          // LEFT
-                                xpos_nxt <= xpos - MOVE_STEP;
-                                ypos_nxt <= ypos;
+                    if(moving[0])begin
+                        // check fuel
+                        if(fuel > 0) begin
+                            if(delay_ctr < MOVE_DELAY) begin
+                                delay_ctr <= delay_ctr + 1;
+                            end else begin
+                                if (moving[1]) begin    // RIGHT
+                                    if(xpos < (HOR_PIXELS -TANK_WIDTH-1)) begin
+                                        xpos_nxt <= xpos + MOVE_STEP;
+                                    end else begin
+                                        xpos_nxt <= xpos;
+                                    end
+                                    ypos_nxt <= ypos;
+                                end else begin          // LEFT
+                                    if(xpos > 0) begin
+                                        xpos_nxt <= xpos - MOVE_STEP;
+                                    end else begin
+                                        xpos_nxt <= xpos;
+                                    end
+                                    ypos_nxt <= ypos;
+                                end
+                                delay_ctr <= '0;
+                                fuel_nxt <= fuel - MOVE_STEP;
                             end
                         end else begin
+                            // cant move, bcs no fuel
+                            // maybe flicker/blink indicator 2 times on red->white->red
                             xpos_nxt <= xpos;
                             ypos_nxt <= ypos;
                         end
                     end else begin
-                        // cant move, bcs no fuel
                         xpos_nxt <= xpos;
                         ypos_nxt <= ypos;
-                        // maybe flicker/blink indicator 2 times on red->white->red
                     end
                 end
 
@@ -95,12 +110,14 @@ module tank_ctl (
                     if(your_turn) begin
                         fuel <= MAX_FUEL;
                     end
+
                 end
             endcase
-
+            
             fuel <= fuel_nxt;
             xpos <= xpos_nxt;
             ypos <= ypos_nxt; // na razie jest plaski teren wiec nie ma znaczneia
+            tank_st <= tank_st_nxt;
         end
     end
 
@@ -115,8 +132,8 @@ module tank_ctl (
             end
 
             MOVING: begin
-                if (!moving[0]) begin   // if 0 then stop moving
-                    tank_st_nxt = IDLE;
+                if (fire_active) begin   // if 0 then stop moving
+                    tank_st_nxt = PREP_BULLET;
                 end else begin
                     tank_st_nxt = MOVING;
                 end

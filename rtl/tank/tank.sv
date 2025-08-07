@@ -4,17 +4,17 @@ module tank (
 
     input  logic [1:0] moving,
     input  logic [1:0] change_angle,
-    input  logic fire_active,
-    input  logic your_turn,
+    input  logic       fire_active,
+    input  logic       your_turn,
 
-    vga_if.in_m     tank_in,
-    vga_if.out_m    tank_out
+    vga_if.in_m        tank_in,
+    vga_if.out_m       tank_out
 );
 
     timeunit 1ns;
     timeprecision 1ps;
 
-   /**
+    /**
      * Local variables and signals
      */
 
