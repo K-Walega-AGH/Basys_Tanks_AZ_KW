@@ -76,16 +76,15 @@ always_comb begin : rect_comb_blk
         pixel_nxt = '0;
     end else begin                              // Active region:
         // draw rectangle
+        local_y = rect_image_in.vcount - ypos;
+        local_x = rect_image_in.hcount - xpos;
+        pixel_nxt = {local_y[9:0], local_x[9:0]};   // [9:0] for 1024x1024
         if (d_rect_image_in.hcount >= d_xpos && d_rect_image_in.hcount < (d_xpos + WIDTH)      // horizontal limits
         && d_rect_image_in.vcount >= d_ypos && d_rect_image_in.vcount < (d_ypos + HEIGHT))     // vertical limits
         begin
             rgb_nxt = rgb_pixel;                // IMAGE RGB
-            local_y = d_rect_image_in.vcount - d_ypos;
-            local_x = d_rect_image_in.hcount - d_xpos + N_buf;
-            pixel_nxt = {local_y[9:0], local_x[9:0]};   // [9:0] for 1024x1024
         end else begin                          // The rest of active display pixels:
-            rgb_nxt = rect_image_in.rgb;              // - fill with BACKGROUND.
-            pixel_nxt = '0;
+            rgb_nxt = d_rect_image_in.rgb;              // - fill with BACKGROUND.
         end
     end
 end : rect_comb_blk
@@ -128,6 +127,12 @@ delay #(.WIDTH(1), .CLK_DEL(N_buf)) d_hblnk (
     .rst(rst),
     .din(rect_image_in.hblnk),
     .dout(d_rect_image_in.hblnk)
+);
+delay #(.WIDTH(12), .CLK_DEL(N_buf)) d_rgb (
+    .clk(clk),
+    .rst(rst),
+    .din(rect_image_in.rgb),
+    .dout(d_rect_image_in.rgb)
 );
 delay #(.WIDTH(12), .CLK_DEL(N_buf)) d_xpos_inst (
     .clk(clk),

@@ -84,8 +84,8 @@ module draw_bg (
         .clk(clk),
         .rst(rst),
 
-        .xpos(12'b0),
-        .ypos(12'b0),
+        .xpos(12'b1),
+        .ypos(12'b1),
 
         .rgb_pixel(rgb_pixel),
         .pixel_addr(pixel_addr),

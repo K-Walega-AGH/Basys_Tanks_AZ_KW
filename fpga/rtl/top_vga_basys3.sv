@@ -22,7 +22,10 @@ module top_vga_basys3 (
         output wire [3:0] vgaRed,
         output wire [3:0] vgaGreen,
         output wire [3:0] vgaBlue,
-        output wire JA1
+        output wire JA1,
+        output wire [7:0] seg,
+        output wire [3:0] an,
+        output wire [15:11] led
     );
 
     timeunit 1ns;
@@ -94,7 +97,10 @@ module top_vga_basys3 (
         .vs(Vsync),
         .ps2_clk(ps2_clk),
         .ps2_data(ps2_data),
-        .clk100MHz(clk100MHz)
+        .clk100MHz(clk100MHz),
+        .sseg(seg),
+        .an(an),
+        .led(led)
     );
 
 endmodule

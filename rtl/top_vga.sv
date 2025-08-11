@@ -22,7 +22,10 @@ module top_vga (
         output logic hs,
         output logic [3:0] r,
         output logic [3:0] g,
-        output logic [3:0] b
+        output logic [3:0] b,
+        output logic [7:0] sseg,
+        output logic [3:0] an,
+        output logic [15:11] led
     );
 
     timeunit 1ns;
@@ -55,6 +58,9 @@ module top_vga (
     // tank_move wires
     // logic [11:0] move_tank_to_draw_tank_xpos;
     // logic [11:0] move_tank_to_draw_tank_ypos;
+    // ps2 signals for hex display
+    logic [7:0] rx_data;
+    logic read_data;
     // font stuff
     logic [10:0] addr;
     logic [7:0] char_xy;
@@ -70,6 +76,8 @@ module top_vga (
     assign {r,g,b} = vga_char.rgb;
     //char_addr assignment
     assign addr = {char_code, char_line};
+    // led for debug
+    assign led = {fire_active, change_angle[1:0], moving[1:0]};
 
     /**
      * Submodules instances
@@ -118,12 +126,10 @@ module top_vga (
         .rect_char_in    (vga_tank),
         .rect_char_out   (vga_char)
     );
-
     char_rom u_char_rom (
         .char_xy(char_xy),
         .char_code(char_code)
     );
-
     font_rom u_font_rom (
         .clk(clk),
         .addr(addr),
@@ -137,11 +143,35 @@ module top_vga (
         .moving(moving),
         .change_angle(change_angle),
         .fire_active(fire_active),
-        .your_turn(your_turn),
+        .your_turn(1'b1),
 
         .tank_in  (vga_terrain),
         .tank_out (vga_tank)
     );
 
+    ps2_keyboard u_ps2_keyboard(
+    .clk100MHz(clk100MHz),
+    .rst(rst),
+
+    .ps2_clk(ps2_clk),
+    .ps2_data(ps2_data),
+
+    .moving(moving),
+    .change_angle(change_angle),
+    .fire_active(fire_active),
+
+    .rx_data_out(rx_data),
+    .read_data_out(read_data)
+    );
+    ps2_display u_ps2_display(
+    .clk(clk100MHz),
+    .rst(rst),
+
+    .rx_data(rx_data),
+    .read_data(read_data),
+
+    .sseg(sseg),
+    .an(an)
+    );
 
 endmodule

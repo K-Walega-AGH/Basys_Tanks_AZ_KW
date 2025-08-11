@@ -4,33 +4,41 @@ module tank (
 
     input  logic [1:0] moving,
     input  logic [1:0] change_angle,
-    input  logic fire_active,
-    input  logic your_turn,
+    input  logic       fire_active,
+    input  logic       your_turn,
 
-    vga_if.in_m     tank_in,
-    vga_if.out_m    tank_out
+    vga_if.in_m        tank_in,
+    vga_if.out_m       tank_out
 );
 
     timeunit 1ns;
     timeprecision 1ps;
 
-   /**
+    /**
      * Local variables and signals
      */
 
-     // VGA signals from tank to barrel
+    // VGA signals from tank to barrel
     vga_if vga_tank2barrel();
- 
-     // tank movement and action
-     logic [11:0] tank_xpos, tank_ypos;
-     // tank_move wires
-     // logic [11:0] move_tank_to_draw_tank_xpos;
-     // logic [11:0] move_tank_to_draw_tank_ypos;
+    // VGA signals from barrel to projectile
+    vga_if vga_barrel2projectile();
+
+    // tank movement and action
+    logic [11:0] tank_xpos, tank_ypos;
+    logic  [6:0] barrel_end_xpos, barrel_end_ypos;
+    logic [11:0] barrel_final_xpos, barrel_final_ypos;
+    logic  [7:0] angle;
+    // tank_move wires
+    // logic [11:0] move_tank_to_draw_tank_xpos;
+    // logic [11:0] move_tank_to_draw_tank_ypos;
 
  
-     /**
-      * Signals assignments
-      */
+    /**
+     * Signals assignments
+     */
+
+    assign barrel_final_xpos = tank_xpos + barrel_end_xpos;
+    assign barrel_final_ypos = tank_ypos + barrel_end_ypos;
 
     /**
      * Submodules instances
@@ -54,10 +62,25 @@ module tank (
         .barrel_ypos(tank_ypos),
         .your_turn(your_turn),
         .change_angle(change_angle),
+        .angle(angle),
+
+        .barrel_end_xpos(barrel_end_xpos),  // !!! relative to tank position !!!
+        .barrel_end_ypos(barrel_end_ypos),
 
         .barrel_in  (vga_tank2barrel),
-        .barrel_out (tank_out)
+        .barrel_out (vga_barrel2projectile)
+    );
+    projectile u_projectile (
+        .clk(clk),
+        .rst(rst),
 
+        .angle(angle),
+
+        .barrel_end_xpos(barrel_final_xpos),
+        .barrel_end_ypos(barrel_final_ypos),
+
+        .projectile_in(vga_barrel2projectile),
+        .projectile_out(tank_out)
     );
     tank_ctl u_tank_ctl (
         .clk(clk),

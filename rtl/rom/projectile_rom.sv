@@ -11,7 +11,7 @@ import projectile_pkg::*;
  * Local variables and signals
  */
 
-reg [11:0] rom [0:(PROJECTILE_WIDTH*PROJECTILE_HEIGHT - 1)];
+reg [11:0] rom [0:(PROJECTILE_WIDTH*PROJECTILE_HEIGHT -1)];
 
 /**
  * Memory initialization from a file
@@ -25,7 +25,7 @@ initial $readmemh("../../rtl/data_files/projectile1.data", rom);
  */
 
 always_ff @(posedge clk) begin
-    rgb <= rom[{address[15:10],address[5:0]}];  //if tank size changes this also needs to be updated
+    rgb <= rom[{address[12:10],address[2:0]}];  // update if change in size
 end
 
 endmodule

@@ -37,8 +37,11 @@ set sv_files {
     ../rtl/vga/vga_if.sv
     ../rtl/vga/vga_pkg.sv
     ../rtl/tank/tank_pkg.sv
+    ../rtl/projectile/projectile_pkg.sv
     ../rtl/delay.sv
     ../rtl/vga/vga_timing.sv
+    ../rtl/ps2_keyboard/ps2_keyboard_ctl.sv
+    ../rtl/ps2_keyboard/ps2_keyboard.sv
     ../rtl/background/draw_bg.sv
     ../rtl/terrain/draw_terrain.sv
     ../rtl/draw_img/draw_rect_char.sv
@@ -50,24 +53,21 @@ set sv_files {
     ../rtl/rom/bg_rom.sv
     ../rtl/rom/tank_rom.sv
     ../rtl/rom/barrel_rom.sv
+    ../rtl/rom/projectile_rom.sv
     ../rtl/tank/draw_tank.sv
     ../rtl/tank/tank_ctl.sv
     ../rtl/tank/tank_move.sv
     ../rtl/tank/draw_barrel.sv
     ../rtl/tank/barrel_ctl.sv
-    ../rtl/tank/tank.sv
     ../rtl/tank/barrel.sv
+    ../rtl/tank/tank.sv
+    ../rtl/projectile/draw_projectile.sv
+    ../rtl/projectile/projectile_ctl.sv
+    ../rtl/projectile/projectile.sv
+    ../rtl/ps2_display.sv
     ../rtl/top_vga.sv
     rtl/top_vga_basys3.sv
 }
-    #planned for ->tank
-
-    #planned for ->projectile
-    # ../rtl/projectile/projectile_pkg.sv
-    # ../rtl/projectile/draw_projectile.sv
-    # ../rtl/projectile/projectile_ctl.sv
-    # ../rtl/data_files/projectile_rom.data
-    # ../rtl/rom/projectile_rom.sv
 
 # Specify Verilog design files location         -- EDIT
 set verilog_files {
@@ -75,12 +75,13 @@ set verilog_files {
     ../fpga/rtl/clk_wiz_0_clk_wiz.v
     ../fpga/rtl/clk_wiz_1.v
     ../fpga/rtl/clk_wiz_1_clk_wiz.v
+    ../rtl/disp_hex_mux.v
 }
 
 # Specify VHDL design files location            -- EDIT
-# set vhdl_files {
-
-# }
+set vhdl_files {
+    ../rtl/ps2_keyboard/Ps2Interface.vhd
+}
 
 # Specify files for a memory initialization     -- EDIT
 #set mem_files {

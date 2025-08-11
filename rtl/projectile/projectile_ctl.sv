@@ -10,15 +10,20 @@
 module projectile_ctl (
     input  logic clk,
     input  logic rst,
-    input  logic space,
+
+    input  logic fire_active,
     input  logic [3:0] degree,
     input  logic [7:0] projectile_strength,
+
+    input  logic [11:0] barrel_end_xpos,
+    input  logic [11:0] barrel_end_ypos,
 
     input  logic [11:0] enemy_xpos,
     input  logic [11:0] enemy_ypos,
 
     output logic collision,
-
+    output logic show_bullet,
+    
     output logic [11:0] projectile_xpos,
     output logic [11:0] projectile_ypos
 );
@@ -47,6 +52,8 @@ module projectile_ctl (
     logic [3:0] missle_degree;
     logic signed [7:0] gravity = -1;
 
+    logic [15:0] delay_ctr;
+
     always_comb begin
         case (degree)
             4'b0001: missle_degree = 4'd1;
@@ -68,26 +75,33 @@ module projectile_ctl (
             vx               <= 0;
             vy               <= 0;
             collision        <= 0;
+            show_bullet      <= '0;
         end else begin
-            projectile_st <= projectile_st_nxt;
-
             case (projectile_st)
 
                 IDLE: begin
-                    if (space) begin
-                        projectile_xpos <= xpos;
-                        projectile_ypos <= ypos;
+                    if (fire_active) begin
                         vx <= missle_degree <<< 1; // *2
                         vy <= projectile_strength;
+                        show_bullet <= '1;
+                    end else begin
+                        show_bullet <= '0;
                     end
+                    projectile_xpos <= barrel_end_xpos;
+                    projectile_ypos <= barrel_end_ypos;
                 end
 
 
 
                 RISING, FALLING: begin
-                    projectile_xpos <= projectile_xpos + vx;
-                    projectile_ypos <= projectile_ypos - vy;
-                    vy <= vy + gravity;
+                    if(delay_ctr < 60_000) begin
+                        delay_ctr <= delay_ctr + 1;
+                    end else begin
+                        projectile_xpos <= projectile_xpos + vx;
+                        projectile_ypos <= projectile_ypos - vy;
+                        vy <= vy + gravity;
+                        delay_ctr <= '0;
+                    end
                      // START MOVING BULLET WITH PARABOLA
                     // CONSTANTLY CHECK FOR COLLISION; 
                     // IF COLLISION GO SO 'COLLISION' STATE
@@ -113,6 +127,8 @@ module projectile_ctl (
                     vy <= 0;
                 end
             endcase
+
+            projectile_st <= projectile_st_nxt;
         end
     end
 
@@ -121,7 +137,7 @@ module projectile_ctl (
 
         case (projectile_st)
             IDLE: begin
-                if (space)
+                if (fire_active)
                     projectile_st_nxt = RISING;
             end
 
