@@ -11,8 +11,9 @@ module projectile (
     input  logic clk,
     input  logic rst,
 
-    input  logic  [7:0] angle,
     input  logic        fire_active,
+    input  logic  [7:0] angle,
+    input  logic [10:0] projectile_strength,
 
     input  logic [11:0] barrel_end_xpos,
     input  logic [11:0] barrel_end_ypos,
@@ -33,6 +34,7 @@ module projectile (
     
     logic [11:0] projectile_xpos, projectile_ypos;
     logic        show_bullet;
+    logic [31:0] sin_val, cos_val;
  
     /**
      * Signals assignments
@@ -59,8 +61,11 @@ module projectile (
     .clk(clk),
     .rst(rst),
 
-    .angle(angle),
+    //sin cos inputs
     .fire_active(fire_active),
+    .sin_val(sin_val),
+    .cos_val(cos_val),
+    .projectile_strength(projectile_strength),
 
     .barrel_end_xpos(barrel_end_xpos),
     .barrel_end_ypos(barrel_end_ypos),
@@ -71,6 +76,14 @@ module projectile (
     .projectile_xpos(projectile_xpos),
     .projectile_ypos(projectile_ypos)
 
+    );
+    sin_lut u_sin_lut (
+    .angle(angle),
+    .sin_val(sin_val)
+    );
+    cos_lut u_cos_lut (
+    .angle(angle),
+    .cos_val(cos_val)
     );
 
 endmodule

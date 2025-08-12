@@ -1,4 +1,4 @@
-module keyboard_ctl (
+module ps2_keyboard_ctl (
     input  logic clk,
     input  logic rst,
 
@@ -44,7 +44,7 @@ module keyboard_ctl (
             case (keyboard_st)
                 IDLE: begin
                     // if not extended or breakcode => normal key
-                    if(rx_data != 0'hF0 || rx_data != 0'hE0) begin
+                    if(rx_data != 8'hF0 || rx_data != 8'hE0) begin
                         scancode <= rx_data;
                     end
                 end
@@ -90,10 +90,10 @@ module keyboard_ctl (
         case (keyboard_st)
             IDLE: begin
                 if(read_data) begin
-                    if(rx_data == 0'hE0) begin
+                    if(rx_data == 8'hE0) begin
                         keyboard_st_nxt = E0_RECIEVED;
                     end else
-                    if(rx_data == 0'hF0) begin
+                    if(rx_data == 8'hF0) begin
                         keyboard_st_nxt = F0_RECIEVED;
                     end else begin
                         keyboard_st_nxt = SET_KEY;
@@ -105,7 +105,7 @@ module keyboard_ctl (
 
             E0_RECIEVED: begin
                 if(read_data) begin
-                    if (rx_data == 0'hF0) begin
+                    if (rx_data == 8'hF0) begin
                         keyboard_st_nxt = F0_RECIEVED;
                     end else begin
                         keyboard_st_nxt = SET_KEY;

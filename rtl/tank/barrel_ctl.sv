@@ -35,7 +35,7 @@ barrel_state barrel_st, barrel_st_nxt;
 // ZAMIENIC NA ZMIENNOPRZECINKOWY FORMAT I DOSTOSOWAC
 logic [7:0] angle_ctr;
 // delay for animation
-logic [19:0] delay_ctr;
+logic [22:0] delay_ctr;
 
 always_ff @(posedge clk or posedge rst) begin
     if(rst) begin

@@ -40,6 +40,7 @@ set sv_files {
     ../rtl/projectile/projectile_pkg.sv
     ../rtl/delay.sv
     ../rtl/vga/vga_timing.sv
+    ../rtl/ps2_keyboard/ps2_keyboard_latch.sv
     ../rtl/ps2_keyboard/ps2_keyboard_ctl.sv
     ../rtl/ps2_keyboard/ps2_keyboard.sv
     ../rtl/background/draw_bg.sv
@@ -64,6 +65,8 @@ set sv_files {
     ../rtl/projectile/draw_projectile.sv
     ../rtl/projectile/projectile_ctl.sv
     ../rtl/projectile/projectile.sv
+    ../rtl/projectile/sin_lut.sv
+    ../rtl/projectile/cos_lut.sv
     ../rtl/ps2_display.sv
     ../rtl/top_vga.sv
     rtl/top_vga_basys3.sv

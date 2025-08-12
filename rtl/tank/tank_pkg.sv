@@ -11,8 +11,10 @@
     localparam MAX_FUEL = 1000;
     localparam MOVE_STEP = 1;
     localparam MOVE_DELAY = 600_000;  // delay by 10ms, clk 60MHz
-    // const for barrel
-    localparam ANGLE_DELAY = 600_000;  // delay by 10ms, clk 60MHz
+    // delay const for firing a bullet
+    localparam STR_DELAY = 60_000;  // delay by 1ms, clk 60MHz
+    // delay const for barrel
+    localparam ANGLE_DELAY = 6_000_000;  // delay by 100ms, clk 60MHz
 
     //initial tank vertical and horizontal position
     localparam TANK_XPOS_START = 50;

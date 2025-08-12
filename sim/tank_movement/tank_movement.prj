@@ -7,6 +7,7 @@ sv work ../../rtl/vga/vga_if.sv \
         ../../rtl/projectile/projectile_pkg.sv \
         ../../rtl/delay.sv \
         ../../rtl/vga/vga_timing.sv \
+        ../../rtl/ps2_keyboard/ps2_keyboard_latch.sv \
         ../../rtl/ps2_keyboard/ps2_keyboard_ctl.sv \
         ../../rtl/ps2_keyboard/ps2_keyboard.sv \
         ../../rtl/background/draw_bg.sv \

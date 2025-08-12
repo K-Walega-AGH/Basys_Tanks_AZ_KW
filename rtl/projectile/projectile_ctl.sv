@@ -11,9 +11,10 @@ module projectile_ctl (
     input  logic clk,
     input  logic rst,
 
-    input  logic fire_active,
-    input  logic [7:0] angle,
-    input  logic [7:0] projectile_strength,
+    input  logic        fire_active,
+    input  logic [31:0] sin_val,
+    input  logic [31:0] cos_val,
+    input  logic [10:0] projectile_strength,
 
     input  logic [11:0] barrel_end_xpos,
     input  logic [11:0] barrel_end_ypos,
@@ -21,8 +22,8 @@ module projectile_ctl (
     input  logic [11:0] enemy_xpos,
     input  logic [11:0] enemy_ypos,
 
-    output logic collision,
-    output logic show_bullet,
+    output logic        collision,
+    output logic        show_bullet,
     
     output logic [11:0] projectile_xpos,
     output logic [11:0] projectile_ypos
@@ -38,7 +39,7 @@ module projectile_ctl (
     // FSM states
     typedef enum logic [2:0] {
         IDLE,
-        FIRED,
+        FIRING,
         RISING,
         FALLING,
         COLLISION,
@@ -51,6 +52,7 @@ module projectile_ctl (
     logic [31:0] xpos_nxt, ypos_nxt;
     //velocity values in Q12.20
     logic [31:0] vx, vy;
+    logic [63:0] temp_vx, temp_vy;
     // delay
     logic [15:0] delay_ctr;
 
@@ -59,12 +61,15 @@ module projectile_ctl (
         if (rst) begin
             vx        <= '0;
             vy        <= '0;
+            temp_vx     <= '0;
+            temp_vy     <= '0;
             xpos_nxt  <= PRJTL_X_INIT;
             ypos_nxt  <= PRJTL_Y_INIT;
             delay_ctr <= '0;
 
             collision       <= '0;
             show_bullet     <= '0;
+
             projectile_xpos <= PRJTL_X_INIT;
             projectile_ypos <= PRJTL_Y_INIT;
 
@@ -72,17 +77,25 @@ module projectile_ctl (
         end else begin
             case (projectile_st)
                 IDLE: begin
+                    show_bullet <= '0;
+                    vx          <= '0;
+                    vy          <= '0;
+                    temp_vx     <= '0;
+                    temp_vy     <= '0;
+                end
+
+                FIRING: begin
                     if (fire_active) begin
-                        show_bullet <= '1;
-                        vx          <= 500*GRAVITY;  // here put velocity based on strenght & angle
-                        vy          <= 1000*GRAVITY; // here put velocity based on strenght & angle
-                        xpos_nxt[31:20] <= barrel_end_xpos;
-                        ypos_nxt[31:20] <= barrel_end_ypos;
-                    end else begin
                         show_bullet <= '0;
-                        vx          <= '0;
-                        vy          <= '0;
+                    end else begin
+                        show_bullet <= '1;
                     end
+                    temp_vx <= (cos_val*GRAVITY)>>20;
+                    temp_vy <= (sin_val*GRAVITY)>>20;
+                    vx      <= temp_vx*projectile_strength;  // here put velocity based on strenght & angle
+                    vy      <= temp_vy*projectile_strength;  // here put velocity based on strenght & angle
+                    xpos_nxt[31:20] <= barrel_end_xpos;
+                    ypos_nxt[31:20] <= barrel_end_ypos;
                 end
 
                 RISING: begin
@@ -156,9 +169,16 @@ module projectile_ctl (
         case (projectile_st)
             IDLE: begin
                 if (fire_active)
-                    projectile_st_nxt = RISING;
+                    projectile_st_nxt = FIRING;
                 else
                     projectile_st_nxt = IDLE;
+            end
+
+            FIRING: begin
+                if(!fire_active)
+                    projectile_st_nxt = RISING;
+                else
+                    projectile_st_nxt = FIRING;
             end
 
             RISING: begin
@@ -176,7 +196,7 @@ module projectile_ctl (
                     projectile_st_nxt = COLLISION;
                 else
                     if(ypos_nxt[31:20] + vy[31:20] > VER_PIXELS)
-                        projectile_st_nxt = WAITING;
+                        projectile_st_nxt = IDLE;//WAITING;
                     else
                         projectile_st_nxt = FALLING;
             end

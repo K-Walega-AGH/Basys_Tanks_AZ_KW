@@ -78,8 +78,8 @@ module draw_bg (
     draw_rect_image 
     #(
         .N_buf(2),
-        .WIDTH(HOR_PIXELS-1),
-        .HEIGHT(VER_PIXELS-1)
+        .WIDTH(HOR_PIXELS-2),
+        .HEIGHT(VER_PIXELS-2)
     ) bg_from_image (
         .clk(clk),
         .rst(rst),

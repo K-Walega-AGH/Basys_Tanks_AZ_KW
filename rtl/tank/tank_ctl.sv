@@ -10,6 +10,7 @@ module tank_ctl (
     input  logic       fire_active,     // Fire bullet input was pressed, start increasing the power
     input  logic       your_turn,       // signal for your turn to fight
 
+    output logic [10:0] projectile_strength,
     output logic [11:0] tank_xpos,
     output logic [11:0] tank_ypos
 );
@@ -24,8 +25,7 @@ module tank_ctl (
     typedef enum logic [2:0] {
         IDLE,
         MOVING,
-        PREP_BULLET,
-        SHOOT,
+        FIRING,
         WAITING
     } tank_state;
 
@@ -38,6 +38,8 @@ module tank_ctl (
     logic [10:0] fuel, fuel_nxt;
     // delay for movement
     logic [19:0] delay_ctr;
+    //
+    logic [10:0] projectile_strength_nxt;
 
     assign tank_xpos = xpos;
     assign tank_ypos = ypos;
@@ -51,12 +53,17 @@ module tank_ctl (
             fuel        <= MAX_FUEL;
             fuel_nxt    <= MAX_FUEL;
             delay_ctr   <= '0;
+            projectile_strength     <= '0;
+            projectile_strength_nxt <= '0;
 
             tank_st     <= IDLE;
         end else begin
             case(tank_st)
                 IDLE: begin
                     // player thinking...
+                    if(fire_active) begin
+                        delay_ctr <= '0;
+                    end
                 end
 
                 MOVING: begin
@@ -94,21 +101,31 @@ module tank_ctl (
                         xpos_nxt <= xpos;
                         ypos_nxt <= ypos;
                     end
+                    if(fire_active) begin
+                        delay_ctr <= '0;
+                    end
                 end
 
-                PREP_BULLET: begin
-                    // here send signal to other module that will begin counting
-                    // when fire_active = 0 stop the counter
-                    // value of that counter sent to bullet module(bullet translates it to velocity)
-                end
-
-                SHOOT: begin
+                FIRING: begin
+                    if(fire_active) begin
+                        if(delay_ctr < STR_DELAY) begin
+                            delay_ctr <= delay_ctr + 1;
+                        end else begin
+                            if(projectile_strength >= 0 && projectile_strength <= 1500)
+                                projectile_strength_nxt <= projectile_strength + 1;
+                            else
+                                projectile_strength_nxt <= projectile_strength;
+                            delay_ctr <= '0;
+                        end
+                    end
                 end
 
                 WAITING: begin
                     //do nothing, wait for 2nd player
                     if(your_turn) begin
                         fuel <= MAX_FUEL;
+                        // uncomment after tb
+                        //projectile_strength_nxt <= '0;
                     end
 
                 end
@@ -117,6 +134,7 @@ module tank_ctl (
             fuel <= fuel_nxt;
             xpos <= xpos_nxt;
             ypos <= ypos_nxt; // na razie jest plaski teren wiec nie ma znaczneia
+            projectile_strength <= projectile_strength_nxt;
             tank_st <= tank_st_nxt;
         end
     end
@@ -126,32 +144,24 @@ module tank_ctl (
         case (tank_st)
             IDLE: begin
                 if (fire_active)
-                    tank_st_nxt = PREP_BULLET;
+                    tank_st_nxt = FIRING;
                 else if (moving[0] && fuel > 0)
                     tank_st_nxt = MOVING;
             end
 
             MOVING: begin
                 if (fire_active) begin   // if 0 then stop moving
-                    tank_st_nxt = PREP_BULLET;
+                    tank_st_nxt = FIRING;
                 end else begin
                     tank_st_nxt = MOVING;
                 end
             end
 
-            PREP_BULLET: begin
+            FIRING: begin
                 if(!fire_active) begin
-                    tank_st_nxt = SHOOT;
-                end else begin
-                    tank_st_nxt = PREP_BULLET;
-                end
-            end
-
-            SHOOT: begin
-                if(fuel > 0) begin
-                    tank_st_nxt = IDLE;
-                end else begin
                     tank_st_nxt = WAITING;
+                end else begin
+                    tank_st_nxt = FIRING;
                 end
             end
 

@@ -151,6 +151,7 @@ module top_vga (
 
     ps2_keyboard u_ps2_keyboard(
     .clk100MHz(clk100MHz),
+    .clk60MHz(clk),
     .rst(rst),
 
     .ps2_clk(ps2_clk),
@@ -164,7 +165,7 @@ module top_vga (
     .read_data_out(read_data)
     );
     ps2_display u_ps2_display(
-    .clk(clk100MHz),
+    .clk(clk),
     .rst(rst),
 
     .rx_data(rx_data),

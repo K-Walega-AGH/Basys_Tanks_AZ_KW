@@ -28,6 +28,7 @@ module tank (
     logic  [6:0] barrel_end_xpos, barrel_end_ypos;
     logic [11:0] barrel_final_xpos, barrel_final_ypos;
     logic  [7:0] angle;
+    logic [10:0] projectile_strength;
     // tank_move wires
     // logic [11:0] move_tank_to_draw_tank_xpos;
     // logic [11:0] move_tank_to_draw_tank_ypos;
@@ -74,7 +75,9 @@ module tank (
         .clk(clk),
         .rst(rst),
 
+        .fire_active(fire_active),
         .angle(angle),
+        .projectile_strength(projectile_strength),
 
         .barrel_end_xpos(barrel_final_xpos),
         .barrel_end_ypos(barrel_final_ypos),
@@ -89,7 +92,8 @@ module tank (
         .moving(moving),
         .fire_active(fire_active),
         .your_turn(your_turn),
-    
+
+        .projectile_strength(projectile_strength),
         .tank_xpos(tank_xpos),
         .tank_ypos(tank_ypos)
     );
