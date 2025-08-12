@@ -1,9 +1,9 @@
 /*
- * Module Author Antoni Zasadni
- * Module Co-Author Kacper Wałęga
+ * Module Author: Antoni Zasadni
+ * Module Co-Author: Kacper Wałęga
  * 
- * Still have no idea how to do collision on terrain here and how to calculate dmg. TBD
- * 
+ * Description:
+ * Projectile behaviour and action control on missles with enviorment.
  */
 
 

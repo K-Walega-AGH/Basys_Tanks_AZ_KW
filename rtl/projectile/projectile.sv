@@ -1,3 +1,12 @@
+/**
+ * Copyright (C) 2025  AGH University of Science and Technology
+ * MTM UEC2
+ * Author: Antoni Zasadni
+ * Co-Author: Kacper Wałęga
+ *
+ * Description:
+ * Module input and output connection to be added at top module.
+ */
 module projectile (
     input  logic clk,
     input  logic rst,
