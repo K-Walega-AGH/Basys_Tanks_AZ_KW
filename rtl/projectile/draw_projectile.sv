@@ -11,11 +11,13 @@ module draw_projectile (
         input  logic clk,
         input  logic rst,
         
+        input  logic show_bullet,
+        
         input  logic [11:0] projectile_xpos,
         input  logic [11:0] projectile_ypos,
 
-        vga_if.in_m     projectile_in,
-        vga_if.out_m    projectile_out
+        vga_if.in_m         projectile_in,
+        vga_if.out_m        projectile_out
     );
 
     timeunit 1ns;
@@ -29,7 +31,7 @@ module draw_projectile (
      * Local variables and signals
      */
 
-    logic [11:0] rgb_nxt;
+    logic [11:0] rgb_nxt, projectile_in_d_rgb;
     logic [19:0] pixel_addr;
     logic [11:0] rgb_pixel;
 
@@ -60,11 +62,14 @@ module draw_projectile (
     end
 
     always_comb begin : tank_comb_blk
-        if(vga_image_projectile.rgb == 12'h0_0_0) begin
-            rgb_nxt = projectile_in.rgb;          // - fill with BACKGROUND
+        if(show_bullet) begin
+            if(vga_image_projectile.rgb == 12'hf_f_f) begin
+                rgb_nxt = projectile_in_d_rgb;        // - fill with BACKGROUND
+            end else begin
+                rgb_nxt = vga_image_projectile.rgb;   // - fill with IMAGE
+            end
         end else begin
-            rgb_nxt = vga_image_projectile.rgb;   // - fill with IMAGE
-            
+            rgb_nxt = projectile_in_d_rgb;            // - fill with BACKGROUND
         end
     end
 
@@ -72,8 +77,8 @@ module draw_projectile (
     draw_rect_image 
     #(
         .N_buf(2),
-        .WIDTH(PROJECTILE_WIDTH-1),
-        .HEIGHT(PROJECTILE_HEIGHT-1)
+        .WIDTH(PROJECTILE_WIDTH),
+        .HEIGHT(PROJECTILE_HEIGHT)
     ) projectile_from_image (
         .clk(clk),
         .rst(rst),
@@ -91,6 +96,14 @@ module draw_projectile (
         .clk(clk),
         .address(pixel_addr),  // address = {addry[9:0], addrx[9:0]}
         .rgb(rgb_pixel)
+    );
+    // delay bg to match image
+    // delayed by 3 bcs => 2 from draw_rect_image + 1 from always_ff
+    delay #(.WIDTH(12), .CLK_DEL(3)) d_rgb (
+    .clk(clk),
+    .rst(rst),
+    .din(projectile_in.rgb),
+    .dout(projectile_in_d_rgb)
     );
 
 endmodule
