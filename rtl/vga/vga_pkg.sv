@@ -38,4 +38,8 @@
     localparam HEIGHT_VER_Y = 64;
     //localparam RECT_COLOR = 12'hF_0_0;
 
+    // draw_rect_char parameters
+    localparam WIDTH_CHAR = 8;
+    localparam HEIGHT_CHAR = 16;
+
 endpackage

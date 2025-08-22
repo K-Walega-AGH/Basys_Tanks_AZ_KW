@@ -53,6 +53,7 @@ set sv_files {
     ../rtl/interface/draw_angle.sv
     ../rtl/interface/interface_pkg.sv
     ../rtl/interface/player_interface.sv
+    ../rtl/draw_img/draw_param_text.sv
     ../rtl/draw_img/draw_rect_char.sv
     ../rtl/draw_img/draw_rect_image.sv
     ../rtl/draw_img/draw_rect_ctl.sv
@@ -68,6 +69,7 @@ set sv_files {
     ../rtl/rom/barrel_rom.sv
     ../rtl/rom/projectile_rom.sv
     ../rtl/rom/help_rom.sv
+    ../rtl/rom/text_rom.sv
     ../rtl/tank/draw_tank.sv
     ../rtl/tank/tank_ctl.sv
     ../rtl/tank/tank_move.sv
@@ -82,6 +84,7 @@ set sv_files {
     ../rtl/projectile/cos_lut.sv
     ../rtl/help/draw_help.sv
     ../rtl/ps2_display.sv
+    ../rtl/top_vga_ctl.sv
     ../rtl/top_vga.sv
     rtl/top_vga_basys3.sv
 }

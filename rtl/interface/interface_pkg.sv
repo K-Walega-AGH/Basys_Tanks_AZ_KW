@@ -2,6 +2,9 @@
  package interface_pkg;
 
     // positions of images
+    localparam TEXT_OFFSET_X = 24;
+    localparam TEXT_OFFSET_Y = 4 + 1;
+
     localparam HP_CURRENT_X = 100;
     localparam HP_CURRENT_Y = 700;
     localparam HP_ENEMY_X = 900;

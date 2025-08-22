@@ -25,6 +25,7 @@ module projectile_ctl
     input  logic [11:0] enemy_ypos,
 
     output logic        enemy_hit,
+    output logic        end_turn,
     output logic        show_bullet,
     
     output logic [11:0] projectile_xpos,
@@ -59,6 +60,9 @@ module projectile_ctl
     logic [15:0] delay_ctr;
     // detect collision with object
     logic collision;
+
+    // signals assignments
+    assign end_turn = (projectile_st == WAITING);
 
     // FSM logic
     always_ff @(posedge clk) begin
@@ -204,7 +208,7 @@ module projectile_ctl
 
                 WAITING: begin
                     enemy_hit <= '0;
-                    //wait for start of turn
+                    // DETERMINE TYPE OF COLLISION (TERRAIN / TANK) AND DO STUFF ACCORDINGLY
                 end
             endcase
 
@@ -253,15 +257,11 @@ module projectile_ctl
             end
 
             COLLISION: begin
-                    // STOP THE BULLET (VELOCITY = 0)
-                    // DETERMINE TYPE OF COLLISION (TERRAIN / TANK) AND DO STUFF ACCORDINGLY
                 projectile_st_nxt = WAITING;
             end
 
             WAITING: begin
-                if(player_turn == 2'b10)    // bez sensu warunki, trza przemyslec
-                    projectile_st_nxt = IDLE;
-                else if(player_turn == 2'b01)
+                if(player_turn == 2'b01 || player_turn == 2'b10)
                     projectile_st_nxt = IDLE;
                 else
                     projectile_st_nxt = WAITING;

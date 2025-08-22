@@ -1,7 +1,7 @@
 
 module help_rom 
 #(
-    AMOUNT_OF_LETTERS = 32
+    parameter AMOUNT_OF_LETTERS = 32
 )(
     input  logic [14:0] char_xy,
     output logic [6:0] char_code,
@@ -23,7 +23,7 @@ parameter string ASCII_mess = "\
  SPACE (PRESS/HOLD) - fire the projectile                                                       \
                                                                                                 \   ";  
 
-localparam int MESS_LENGTH = $bits(ASCII_mess)/8;
+localparam MESS_LENGTH = $bits(ASCII_mess)/8;
 
 always_comb begin : char_rom_comb_blk
     used_lines = (MESS_LENGTH + AMOUNT_OF_LETTERS - 1) / AMOUNT_OF_LETTERS;

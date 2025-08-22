@@ -39,7 +39,7 @@ module top_vga (
     vga_if vga_timing();
     // VGA signals from background
     vga_if vga_bg();
-    // VGA signals from background
+    // VGA signals from terrain
     vga_if vga_terrain();
     // VGA signals from tanks
     vga_if vga_tank_LEFT();
@@ -51,31 +51,34 @@ module top_vga (
     // VGA signals from help module
     vga_if vga_help();
 
-    // // VGA signals from rectangle
-    // vga_if vga_rect();
-
-    // // VGA signals from mouse
-    // vga_if vga_mouse();
-
     // tank movement and action
-    logic [1:0] moving, change_angle;
-    logic fire_active, your_turn;
+    logic  [1:0] moving, change_angle;
+    logic fire_active;
     // signals necessary for projectile
     logic [11:0] tank_xpos_LEFT, tank_ypos_LEFT;
     logic [11:0] tank_xpos_RIGHT, tank_ypos_RIGHT;
-    logic        enemy_hit_LEFT, enemy_hit_RIGHT;
     logic        damaged_LEFT, damaged_RIGHT;
     logic  [6:0] barrel_end_xpos_LEFT, barrel_end_ypos_LEFT, barrel_end_xpos_RIGHT, barrel_end_ypos_RIGHT;
-    logic [11:0] barrel_final_xpos_LEFT, barrel_final_ypos_LEFT, barrel_final_xpos_RIGHT, barrel_final_ypos_RIGHT;
+    logic        end_turn;
     logic  [7:0] angle_LEFT, angle_RIGHT;
     logic [10:0] projectile_strength_LEFT, projectile_strength_RIGHT;
     logic  [1:0] hp_LEFT, hp_RIGHT;
     logic [10:0] fuel_LEFT, fuel_RIGHT;
     // signal to show help
-    logic show_help;
+    logic        show_help;
     // ps2 signals for hex display
-    logic [7:0] rx_data;
-    logic read_data;
+    logic  [7:0] rx_data;
+    logic        read_data;
+    // signals from top_vga_ctl
+    logic  [1:0] hp_CURRENT, hp_ENEMY;
+    logic  [7:0] angle;
+    logic [10:0] projectile_strength;
+    logic [10:0] fuel;
+    logic [11:0] barrel_final_xpos, barrel_final_ypos;
+    logic [11:0] enemy_xpos, enemy_ypos;
+    logic        enemy_hit;
+    // bit 0 => LEFT ; bit 1 => RIGHT
+    logic  [1:0] player_turn;
 
     /**
      * Signals assignments
@@ -85,15 +88,7 @@ module top_vga (
     assign {r,g,b} = vga_help.rgb;
     // led for debug
     assign led = {fire_active, change_angle[1:0], moving[1:0]};
-    // xpos, ypos for projectile starting position
-    assign barrel_final_xpos_LEFT = tank_xpos_LEFT + barrel_end_xpos_LEFT;
-    assign barrel_final_ypos_LEFT = tank_ypos_LEFT + barrel_end_ypos_LEFT;
-    assign barrel_final_xpos_RIGHT = tank_xpos_RIGHT + barrel_end_xpos_RIGHT;
-    assign barrel_final_ypos_RIGHT = tank_ypos_RIGHT + barrel_end_ypos_RIGHT;
     // hit from projectile to tanks
-    assign damaged_LEFT  = enemy_hit_LEFT;
-    assign damaged_RIGHT = enemy_hit_RIGHT;
-
     /**
      * Submodules instances
      */
@@ -134,7 +129,7 @@ module top_vga (
         .moving(moving),
         .change_angle(change_angle),
         .fire_active(fire_active),
-        .your_turn(1'b1),
+        .your_turn(player_turn[0]),
 
         .damaged(damaged_LEFT),
 
@@ -160,7 +155,7 @@ module top_vga (
         .moving(moving),
         .change_angle(change_angle),
         .fire_active(fire_active),
-        .your_turn(1'b0),
+        .your_turn(player_turn[1]),
 
         .damaged(damaged_RIGHT),
 
@@ -180,17 +175,18 @@ module top_vga (
         .clk(clk),
         .rst(rst),
 
-        .player_turn(2'b01),    // {your_turn_RIGHT, your_turn_LEFT}
+        .player_turn(player_turn),
         .fire_active(fire_active),
-        .angle(angle_LEFT),
-        .projectile_strength(projectile_strength_LEFT),
+        .angle(angle),
+        .projectile_strength(projectile_strength),
 
-        .barrel_end_xpos(barrel_final_xpos_LEFT),
-        .barrel_end_ypos(barrel_final_ypos_LEFT),
+        .barrel_end_xpos(barrel_final_xpos),
+        .barrel_end_ypos(barrel_final_ypos),
 
-        .enemy_xpos(tank_xpos_RIGHT),
-        .enemy_ypos(tank_ypos_RIGHT),
-        .enemy_hit(enemy_hit_RIGHT),
+        .enemy_xpos(enemy_xpos),
+        .enemy_ypos(enemy_ypos),
+        .enemy_hit(enemy_hit),
+        .end_turn(end_turn),
 
         .projectile_in(vga_tank_RIGHT),
         .projectile_out(vga_projectile)
@@ -204,18 +200,15 @@ module top_vga (
         .help_in(vga_interface),
         .help_out(vga_help)
     );
-    player_interface
-    #(
-        .PLAYER_ID(1)  // chyba useless na razie
-    ) u_player_interface (
+    player_interface u_player_interface (
         .clk(clk),
         .rst(rst),
 
-        .hp_CURRENT(hp_LEFT),
-        .hp_ENEMY(hp_RIGHT),
-        .angle(angle_LEFT),
-        .projectile_strength(projectile_strength_LEFT),
-        .fuel(fuel_LEFT),
+        .hp_CURRENT(hp_CURRENT),
+        .hp_ENEMY(hp_ENEMY),
+        .angle(angle),
+        .projectile_strength(projectile_strength),
+        .fuel(fuel),
 
         .interface_in(vga_projectile),
         .interface_out(vga_interface)
@@ -246,6 +239,44 @@ module top_vga (
 
     .sseg(sseg),
     .an(an)
+    );
+
+    // instance of top_vga_ctl
+    top_vga_ctl u_vga_ctl (
+        .clk(clk),
+        .rst(rst),
+        // input signals
+        .hp_LEFT(hp_LEFT),
+        .hp_RIGHT(hp_RIGHT),
+        .angle_LEFT(angle_LEFT),
+        .angle_RIGHT(angle_RIGHT),
+        .strength_LEFT(projectile_strength_LEFT),
+        .strength_RIGHT(projectile_strength_RIGHT),
+        .fuel_LEFT(fuel_LEFT),
+        .fuel_RIGHT(fuel_RIGHT),
+        .tank_xpos_LEFT(tank_xpos_LEFT),
+        .tank_ypos_LEFT(tank_ypos_LEFT),
+        .tank_xpos_RIGHT(tank_xpos_RIGHT),
+        .tank_ypos_RIGHT(tank_ypos_RIGHT),
+        .barrel_end_xpos_LEFT(barrel_end_xpos_LEFT),
+        .barrel_end_ypos_LEFT(barrel_end_ypos_LEFT),
+        .barrel_end_xpos_RIGHT(barrel_end_xpos_RIGHT),
+        .barrel_end_ypos_RIGHT(barrel_end_ypos_RIGHT),
+        .end_turn(end_turn),
+        .enemy_hit(enemy_hit),
+        // output signals
+        .player_turn(player_turn),
+        .hp_CURRENT(hp_CURRENT),
+        .hp_ENEMY(hp_ENEMY),
+        .angle(angle),
+        .projectile_strength(projectile_strength),
+        .fuel(fuel),
+        .barrel_final_xpos(barrel_final_xpos),
+        .barrel_final_ypos(barrel_final_ypos),
+        .enemy_xpos(enemy_xpos),
+        .enemy_ypos(enemy_ypos),
+        .damaged_LEFT(damaged_LEFT),
+        .damaged_RIGHT(damaged_RIGHT)
     );
 
 endmodule

@@ -7,14 +7,18 @@
  * Draw background.
  */
 
-module draw_angle (
+module draw_param_text 
+    #(
+        parameter string TEXT = " ",
+        parameter LINES = 1,
+        parameter TEXT_X = 0,
+        parameter TEXT_Y = 0
+    )(
         input  logic clk,
         input  logic rst,
-        
-        input  logic  [7:0] angle,
 
-        vga_if.in_m         angle_in,
-        vga_if.out_m        angle_out
+        vga_if.in_m         text_in,
+        vga_if.out_m        text_out
     );
 
     timeunit 1ns;
@@ -28,6 +32,8 @@ module draw_angle (
      * Local variables and signals
      */
 
+    localparam TEXT_LENGTH = $bits(TEXT)/8;
+    
     logic [11:0] rgb_nxt;
     logic [10:0] addr;
     logic [14:0]  char_xy;
@@ -36,7 +42,7 @@ module draw_angle (
     logic  [7:0]  char_line_pixels;
     logic  [5:0]  used_lines;
 
-    vga_if vga_angle();
+    vga_if vga_text();
 
     // char_addr assignment
     assign addr = {char_code, char_line};
@@ -47,34 +53,34 @@ module draw_angle (
 
     always_ff @(posedge clk) begin
         if (rst) begin
-            angle_out.vcount <= '0;
-            angle_out.vsync <= '0;
-            angle_out.vblnk <= '0; 
-            angle_out.hcount <= '0; 
-            angle_out.hsync <= '0;
-            angle_out.hblnk <= '0; 
-            angle_out.rgb <= '0;
+            text_out.vcount <= '0;
+            text_out.vsync <= '0;
+            text_out.vblnk <= '0; 
+            text_out.hcount <= '0; 
+            text_out.hsync <= '0;
+            text_out.hblnk <= '0; 
+            text_out.rgb <= '0;
         end else begin
-            angle_out.vcount <= vga_angle.vcount;
-            angle_out.vsync  <= vga_angle.vsync;
-            angle_out.vblnk  <= vga_angle.vblnk;
-            angle_out.hcount <= vga_angle.hcount;
-            angle_out.hsync  <= vga_angle.hsync;
-            angle_out.hblnk  <= vga_angle.hblnk;
-            angle_out.rgb    <= rgb_nxt;
+            text_out.vcount <= vga_text.vcount;
+            text_out.vsync  <= vga_text.vsync;
+            text_out.vblnk  <= vga_text.vblnk;
+            text_out.hcount <= vga_text.hcount;
+            text_out.hsync  <= vga_text.hsync;
+            text_out.hblnk  <= vga_text.hblnk;
+            text_out.rgb    <= rgb_nxt;
         end
     end
 
     always_comb begin
-        rgb_nxt = vga_angle.rgb;
+        rgb_nxt = vga_text.rgb;
     end
 
     draw_rect_char #(
         .N_buf(2),
-        .XPOS(ANGLE_X),
-        .YPOS(ANGLE_Y),
-        .AMOUNT_OF_LETTERS(10),
-        .AMOUNT_OF_LINES(1)
+        .XPOS(TEXT_X),
+        .YPOS(TEXT_Y),
+        .AMOUNT_OF_LETTERS(TEXT_LENGTH),
+        .AMOUNT_OF_LINES(LINES)
     ) u_draw_rect_char (
         .clk(clk),
         .rst(rst),
@@ -82,11 +88,12 @@ module draw_angle (
         .char_line_pixels(char_line_pixels),
         .char_xy(char_xy),
         .char_line(char_line),
-        .rect_char_in(angle_in),
-        .rect_char_out(vga_angle)
+        .rect_char_in(text_in),
+        .rect_char_out(vga_text)
     );
-    angle_rom u_angle_rom (
-        .angle(angle),
+    text_rom #(
+        .TEXT(TEXT)
+    ) u_text_rom (
         .char_xy(char_xy),
         .char_code(char_code),
         .used_lines(used_lines)

@@ -22,7 +22,9 @@ module projectile
 
     input  logic [11:0] enemy_xpos,
     input  logic [11:0] enemy_ypos,
+
     output logic        enemy_hit,
+    output logic        end_turn,
 
     vga_if.in_m         projectile_in,
     vga_if.out_m        projectile_out
@@ -80,6 +82,7 @@ module projectile
     .enemy_ypos(enemy_ypos),
 
     .enemy_hit(enemy_hit),
+    .end_turn(end_turn),
     .show_bullet(show_bullet),
 
     .projectile_xpos(projectile_xpos),

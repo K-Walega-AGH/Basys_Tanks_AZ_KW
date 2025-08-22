@@ -47,14 +47,17 @@ module tank_ctl
     logic [1:0] local_hp, local_hp_nxt;
     // delay for movement
     logic [19:0] delay_ctr;
-    //
+    // projectile strength value
     logic [10:0] projectile_strength_nxt;
+    // variables for rising edge of your_turn for state change WAITING -> IDLE
+    logic        your_turn_d, your_turn_posedge;
 
     // assignments
     assign hp = local_hp;
     assign fuel = local_fuel;
     assign tank_xpos = xpos;
     assign tank_ypos = ypos;
+    assign your_turn_posedge = (!your_turn_d && your_turn);
     
     // states in action
     always_ff @(posedge clk) begin
@@ -74,9 +77,10 @@ module tank_ctl
             local_fuel_nxt    <= MAX_FUEL;
             local_hp          <= MAX_HP;
             local_hp_nxt      <= MAX_HP;
-            delay_ctr   <= '0;
+            delay_ctr         <= '0;
             projectile_strength     <= '0;
             projectile_strength_nxt <= '0;
+            your_turn_d <= '0;
 
             tank_st     <= IDLE;
         end else begin
@@ -143,27 +147,26 @@ module tank_ctl
                 end
 
                 WAITING: begin
-                    //do nothing, wait for hit or 2nd player to end turn
+                    //wait for hit or 2nd player to end turn
                     if(damaged == 1) begin
                         if(local_hp > 0)
                             local_hp_nxt <= local_hp - 1;
                         else
                             local_hp_nxt <= local_hp;
                     end
-                    if(your_turn) begin
-                        local_fuel <= MAX_FUEL;
-                        // uncomment after tb
-                        //projectile_strength_nxt <= '0;
+                    if(your_turn_posedge) begin
+                        local_fuel_nxt <= MAX_FUEL;
+                        projectile_strength_nxt <= '0;
                     end
-
                 end
             endcase
             
             local_hp   <= local_hp_nxt;
             local_fuel <= local_fuel_nxt;
             xpos <= xpos_nxt;
-            ypos <= ypos_nxt; // na razie jest plaski teren wiec nie ma znaczneia
+            ypos <= ypos_nxt;
             projectile_strength <= projectile_strength_nxt;
+            your_turn_d <= your_turn;
             tank_st <= tank_st_nxt;
         end
     end
@@ -184,7 +187,7 @@ module tank_ctl
             end
 
             MOVING: begin
-                if (fire_active) begin   // if 0 then stop moving
+                if (fire_active) begin   // if 1 then stop moving
                     tank_st_nxt = FIRING;
                 end else begin
                     tank_st_nxt = MOVING;
@@ -200,7 +203,7 @@ module tank_ctl
             end
 
             WAITING: begin
-                if (your_turn) begin
+                if (your_turn_posedge) begin
                     tank_st_nxt = IDLE;
                 end else begin
                     tank_st_nxt = WAITING;

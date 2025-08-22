@@ -36,8 +36,7 @@ import vga_pkg::*;
 /**
  * Local variables and signals
  */
-localparam WIDTH_CHAR = 8;
-localparam HEIGHT_CHAR = 16;
+
 localparam MESS_WIDTH = WIDTH_CHAR*AMOUNT_OF_LETTERS;
 localparam MESS_HEIGHT = HEIGHT_CHAR*AMOUNT_OF_LINES;
 
