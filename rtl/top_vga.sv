@@ -41,10 +41,15 @@ module top_vga (
     vga_if vga_bg();
     // VGA signals from background
     vga_if vga_terrain();
-    // VGA signals from display characters
-    vga_if vga_char();
-    // VGA signals from tank
-    vga_if vga_tank();
+    // VGA signals from tanks
+    vga_if vga_tank_LEFT();
+    vga_if vga_tank_RIGHT();
+    // VGA signals from projectile
+    vga_if vga_projectile();
+    // VGA signals from interface
+    vga_if vga_interface();
+    // VGA signals from help module
+    vga_if vga_help();
 
     // // VGA signals from rectangle
     // vga_if vga_rect();
@@ -55,29 +60,39 @@ module top_vga (
     // tank movement and action
     logic [1:0] moving, change_angle;
     logic fire_active, your_turn;
-    // tank_move wires
-    // logic [11:0] move_tank_to_draw_tank_xpos;
-    // logic [11:0] move_tank_to_draw_tank_ypos;
+    // signals necessary for projectile
+    logic [11:0] tank_xpos_LEFT, tank_ypos_LEFT;
+    logic [11:0] tank_xpos_RIGHT, tank_ypos_RIGHT;
+    logic        enemy_hit_LEFT, enemy_hit_RIGHT;
+    logic        damaged_LEFT, damaged_RIGHT;
+    logic  [6:0] barrel_end_xpos_LEFT, barrel_end_ypos_LEFT, barrel_end_xpos_RIGHT, barrel_end_ypos_RIGHT;
+    logic [11:0] barrel_final_xpos_LEFT, barrel_final_ypos_LEFT, barrel_final_xpos_RIGHT, barrel_final_ypos_RIGHT;
+    logic  [7:0] angle_LEFT, angle_RIGHT;
+    logic [10:0] projectile_strength_LEFT, projectile_strength_RIGHT;
+    logic  [1:0] hp_LEFT, hp_RIGHT;
+    logic [10:0] fuel_LEFT, fuel_RIGHT;
+    // signal to show help
+    logic show_help;
     // ps2 signals for hex display
     logic [7:0] rx_data;
     logic read_data;
-    // font stuff
-    logic [10:0] addr;
-    logic [7:0] char_xy;
-    logic [6:0] char_code;
-    logic [3:0] char_line;
-    logic [7:0] char_line_pixels;
 
     /**
      * Signals assignments
      */
-    assign vs = vga_char.vsync;
-    assign hs = vga_char.hsync;
-    assign {r,g,b} = vga_char.rgb;
-    //char_addr assignment
-    assign addr = {char_code, char_line};
+    assign vs = vga_help.vsync;
+    assign hs = vga_help.hsync;
+    assign {r,g,b} = vga_help.rgb;
     // led for debug
     assign led = {fire_active, change_angle[1:0], moving[1:0]};
+    // xpos, ypos for projectile starting position
+    assign barrel_final_xpos_LEFT = tank_xpos_LEFT + barrel_end_xpos_LEFT;
+    assign barrel_final_ypos_LEFT = tank_ypos_LEFT + barrel_end_ypos_LEFT;
+    assign barrel_final_xpos_RIGHT = tank_xpos_RIGHT + barrel_end_xpos_RIGHT;
+    assign barrel_final_ypos_RIGHT = tank_ypos_RIGHT + barrel_end_ypos_RIGHT;
+    // hit from projectile to tanks
+    assign damaged_LEFT  = enemy_hit_LEFT;
+    assign damaged_RIGHT = enemy_hit_RIGHT;
 
     /**
      * Submodules instances
@@ -109,34 +124,10 @@ module top_vga (
         .terrain_in  (vga_bg),
         .terrain_out (vga_terrain)
     );
-
-    draw_rect_char 
-        #(
-        .N_buf(2),
-        .XPOS(272),
-        .YPOS(460)
-        ) u_draw_rect_char (
-        .clk(clk),
-        .rst(rst),
-
-        .char_line_pixels(char_line_pixels),
-        .char_xy(char_xy),
-        .char_line(char_line),
-
-        .rect_char_in    (vga_tank),
-        .rect_char_out   (vga_char)
-    );
-    char_rom u_char_rom (
-        .char_xy(char_xy),
-        .char_code(char_code)
-    );
-    font_rom u_font_rom (
-        .clk(clk),
-        .addr(addr),
-        .char_line_pixels(char_line_pixels)
-    );
-
-    tank u_tank_LEFT (
+    tank
+    #(
+        .PLAYER_ID(1)
+    ) u_tank_LEFT (
         .clk(clk),
         .rst(rst),
 
@@ -145,8 +136,89 @@ module top_vga (
         .fire_active(fire_active),
         .your_turn(1'b1),
 
+        .damaged(damaged_LEFT),
+
+        .angle(angle_LEFT),
+        .projectile_strength(projectile_strength_LEFT),
+        .hp(hp_LEFT),
+        .fuel(fuel_LEFT),
+        .tank_xpos(tank_xpos_LEFT),
+        .tank_ypos(tank_ypos_LEFT),
+        .barrel_end_xpos(barrel_end_xpos_LEFT),
+        .barrel_end_ypos(barrel_end_ypos_LEFT),
+
         .tank_in  (vga_terrain),
-        .tank_out (vga_tank)
+        .tank_out (vga_tank_LEFT)
+    );
+    tank
+    #(
+        .PLAYER_ID(2)
+    ) u_tank_RIGHT (
+        .clk(clk),
+        .rst(rst),
+
+        .moving(moving),
+        .change_angle(change_angle),
+        .fire_active(fire_active),
+        .your_turn(1'b0),
+
+        .damaged(damaged_RIGHT),
+
+        .angle(angle_RIGHT),
+        .projectile_strength(projectile_strength_RIGHT),
+        .hp(hp_RIGHT),
+        .fuel(fuel_RIGHT),
+        .tank_xpos(tank_xpos_RIGHT),
+        .tank_ypos(tank_ypos_RIGHT),
+        .barrel_end_xpos(barrel_end_xpos_RIGHT),
+        .barrel_end_ypos(barrel_end_ypos_RIGHT),
+
+        .tank_in  (vga_tank_LEFT),
+        .tank_out (vga_tank_RIGHT)
+    );
+    projectile u_projectile (
+        .clk(clk),
+        .rst(rst),
+
+        .player_turn(2'b01),    // {your_turn_RIGHT, your_turn_LEFT}
+        .fire_active(fire_active),
+        .angle(angle_LEFT),
+        .projectile_strength(projectile_strength_LEFT),
+
+        .barrel_end_xpos(barrel_final_xpos_LEFT),
+        .barrel_end_ypos(barrel_final_ypos_LEFT),
+
+        .enemy_xpos(tank_xpos_RIGHT),
+        .enemy_ypos(tank_ypos_RIGHT),
+        .enemy_hit(enemy_hit_RIGHT),
+
+        .projectile_in(vga_tank_RIGHT),
+        .projectile_out(vga_projectile)
+    );
+    draw_help u_draw_help(
+        .clk(clk),
+        .rst(rst),
+
+        .show_help(show_help),
+
+        .help_in(vga_interface),
+        .help_out(vga_help)
+    );
+    player_interface
+    #(
+        .PLAYER_ID(1)  // chyba useless na razie
+    ) u_player_interface (
+        .clk(clk),
+        .rst(rst),
+
+        .hp_CURRENT(hp_LEFT),
+        .hp_ENEMY(hp_RIGHT),
+        .angle(angle_LEFT),
+        .projectile_strength(projectile_strength_LEFT),
+        .fuel(fuel_LEFT),
+
+        .interface_in(vga_projectile),
+        .interface_out(vga_interface)
     );
 
     ps2_keyboard u_ps2_keyboard(
@@ -160,6 +232,7 @@ module top_vga (
     .moving(moving),
     .change_angle(change_angle),
     .fire_active(fire_active),
+    .show_help(show_help),
 
     .rx_data_out(rx_data),
     .read_data_out(read_data)

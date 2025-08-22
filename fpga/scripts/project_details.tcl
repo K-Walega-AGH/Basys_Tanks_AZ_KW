@@ -45,6 +45,14 @@ set sv_files {
     ../rtl/ps2_keyboard/ps2_keyboard.sv
     ../rtl/background/draw_bg.sv
     ../rtl/terrain/draw_terrain.sv
+    ../rtl/terrain/terrain_pkg.sv
+    ../rtl/interface/draw_if_bg.sv
+    ../rtl/interface/draw_hp.sv
+    ../rtl/interface/draw_strength.sv
+    ../rtl/interface/draw_fuel.sv
+    ../rtl/interface/draw_angle.sv
+    ../rtl/interface/interface_pkg.sv
+    ../rtl/interface/player_interface.sv
     ../rtl/draw_img/draw_rect_char.sv
     ../rtl/draw_img/draw_rect_image.sv
     ../rtl/draw_img/draw_rect_ctl.sv
@@ -52,9 +60,14 @@ set sv_files {
     ../rtl/rom/font_rom.sv
     ../rtl/rom/image_rom.sv
     ../rtl/rom/bg_rom.sv
+    ../rtl/rom/border_str_rom.sv
+    ../rtl/rom/border_fuel_rom.sv
+    ../rtl/rom/hp_rom.sv
+    ../rtl/rom/angle_rom.sv
     ../rtl/rom/tank_rom.sv
     ../rtl/rom/barrel_rom.sv
     ../rtl/rom/projectile_rom.sv
+    ../rtl/rom/help_rom.sv
     ../rtl/tank/draw_tank.sv
     ../rtl/tank/tank_ctl.sv
     ../rtl/tank/tank_move.sv
@@ -67,6 +80,7 @@ set sv_files {
     ../rtl/projectile/projectile.sv
     ../rtl/projectile/sin_lut.sv
     ../rtl/projectile/cos_lut.sv
+    ../rtl/help/draw_help.sv
     ../rtl/ps2_display.sv
     ../rtl/top_vga.sv
     rtl/top_vga_basys3.sv

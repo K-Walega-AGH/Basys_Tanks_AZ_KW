@@ -98,7 +98,6 @@ module draw_projectile (
         .rgb(rgb_pixel)
     );
     // delay bg to match image
-    // delayed by 3 bcs => 2 from draw_rect_image + 1 from always_ff
     delay #(.WIDTH(12), .CLK_DEL(3)) d_rgb (
     .clk(clk),
     .rst(rst),

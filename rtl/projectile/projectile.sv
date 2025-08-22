@@ -7,16 +7,22 @@
  * Description:
  * Module input and output connection to be added at top module.
  */
-module projectile (
+module projectile 
+(
     input  logic clk,
     input  logic rst,
 
+    input  logic  [1:0] player_turn,
     input  logic        fire_active,
     input  logic  [7:0] angle,
     input  logic [10:0] projectile_strength,
 
     input  logic [11:0] barrel_end_xpos,
     input  logic [11:0] barrel_end_ypos,
+
+    input  logic [11:0] enemy_xpos,
+    input  logic [11:0] enemy_ypos,
+    output logic        enemy_hit,
 
     vga_if.in_m         projectile_in,
     vga_if.out_m        projectile_out
@@ -61,7 +67,7 @@ module projectile (
     .clk(clk),
     .rst(rst),
 
-    //sin cos inputs
+    .player_turn(player_turn),
     .fire_active(fire_active),
     .sin_val(sin_val),
     .cos_val(cos_val),
@@ -70,7 +76,10 @@ module projectile (
     .barrel_end_xpos(barrel_end_xpos),
     .barrel_end_ypos(barrel_end_ypos),
 
-    .collision(),
+    .enemy_xpos(enemy_xpos),
+    .enemy_ypos(enemy_ypos),
+
+    .enemy_hit(enemy_hit),
     .show_bullet(show_bullet),
 
     .projectile_xpos(projectile_xpos),

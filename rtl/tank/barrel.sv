@@ -1,5 +1,8 @@
 
-module barrel (
+module barrel 
+#(
+    PLAYER_ID = 1
+)(
     input  logic clk,
     input  logic rst,
 
@@ -19,7 +22,10 @@ module barrel (
 
     logic [2:0] angle_index;
 
-    draw_barrel u_draw_barrel (
+    draw_barrel 
+    #(
+        .PLAYER_ID(PLAYER_ID)
+    ) u_draw_barrel (
         .clk(clk),
         .rst(rst),
 
@@ -30,7 +36,10 @@ module barrel (
         .barrel_in  (barrel_in),
         .barrel_out (barrel_out)
     );
-    barrel_ctl u_barrel_ctl (
+    barrel_ctl 
+    #(
+        .PLAYER_ID(PLAYER_ID)
+    ) u_barrel_ctl (
         .clk(clk),
         .rst(rst),
 

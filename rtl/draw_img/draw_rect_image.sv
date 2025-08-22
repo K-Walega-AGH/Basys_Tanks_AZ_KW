@@ -72,7 +72,7 @@ end : rect_ff_blk
 
 always_comb begin : rect_comb_blk
     if (d_rect_image_in.vblnk || d_rect_image_in.hblnk) begin             // Blanking region:
-        rgb_nxt = rect_image_in.rgb;                  // - make it BACKGROUND.
+        rgb_nxt = d_rect_image_in.rgb;                  // - make it BACKGROUND.
         pixel_nxt = '0;
     end else begin                              // Active region:
         // draw rectangle

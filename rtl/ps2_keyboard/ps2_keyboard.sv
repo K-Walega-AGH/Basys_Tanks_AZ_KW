@@ -9,6 +9,7 @@ module ps2_keyboard (
     output logic [1:0] moving,
     output logic [1:0] change_angle,
     output logic       fire_active,
+    output logic       show_help,
 
     output logic [7:0] rx_data_out,
     output logic       read_data_out
@@ -24,13 +25,16 @@ module ps2_keyboard (
     logic       busy;
     logic       err;
     // keys pressed signals
-    logic arrow_up, arrow_down, arrow_left, arrow_right, space;
-    logic arrow_up100MHz, arrow_down100MHz, arrow_left100MHz, arrow_right100MHz, space100MHz;
+    logic arrow_up, arrow_down, arrow_left, arrow_right;
+    logic space, H;
+    logic arrow_up100MHz, arrow_down100MHz, arrow_left100MHz, arrow_right100MHz;
+    logic space100MHz, H100MHz;
 
     /**
      * Signals assignments
      */
 
+    assign show_help = H;
     assign fire_active = space;
     assign moving = {arrow_right, (arrow_left || arrow_right)};
     assign change_angle = {arrow_up, (arrow_up || arrow_down)};
@@ -59,6 +63,7 @@ module ps2_keyboard (
         .rst        (rst),
         .rx_data    (rx_data),
         .read_data  (read_data),
+        .H          (H100MHz),
         .space      (space100MHz),
         .arrow_up   (arrow_up100MHz),
         .arrow_down (arrow_down100MHz),
@@ -69,12 +74,14 @@ module ps2_keyboard (
         .clk(clk60MHz),
         .rst(rst),
         // input signals
+        .H_in          (H100MHz),
         .space_in      (space100MHz),
         .arrow_up_in   (arrow_up100MHz),
         .arrow_down_in (arrow_down100MHz),
         .arrow_left_in (arrow_left100MHz),
         .arrow_right_in(arrow_right100MHz),
         // outputs sync'ed with clk60MHz
+        .H          (H),
         .space      (space),
         .arrow_up   (arrow_up),
         .arrow_down (arrow_down),

@@ -20,7 +20,7 @@ module ps2_display (
     assign hex3 = byte_previous[7:4];
 
     // capture data
-    always_ff @(posedge clk or posedge rst) begin
+    always_ff @(posedge clk) begin
         if (rst) begin
             byte_current  <= 8'd0;
             byte_previous <= 8'd0;
@@ -37,7 +37,7 @@ module ps2_display (
     // Use existing 7-segment display driver
     disp_hex_mux seg7display (
         .clk(clk),
-        .reset(rst),
+        .rst(rst),
         .hex3(hex3),
         .hex2(hex2),
         .hex1(hex1),

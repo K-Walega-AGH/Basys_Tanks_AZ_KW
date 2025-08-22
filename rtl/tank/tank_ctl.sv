@@ -1,5 +1,10 @@
 
-module tank_ctl (
+module tank_ctl 
+#(
+    // Either 1 or 2
+    //determines tank side of screen, roms and bullet vx direction
+    PLAYER_ID = 1    
+)(
     input  logic clk,
     input  logic rst,
 
@@ -9,7 +14,10 @@ module tank_ctl (
     input  logic [1:0] moving,      
     input  logic       fire_active,     // Fire bullet input was pressed, start increasing the power
     input  logic       your_turn,       // signal for your turn to fight
+    input  logic       damaged,
 
+    output logic  [1:0] hp,
+    output logic [10:0] fuel,
     output logic [10:0] projectile_strength,
     output logic [11:0] tank_xpos,
     output logic [11:0] tank_ypos
@@ -35,23 +43,37 @@ module tank_ctl (
     logic [11:0] xpos, xpos_nxt;
     logic [11:0] ypos, ypos_nxt;
     // tank fuel
-    logic [10:0] fuel, fuel_nxt;
+    logic [10:0] local_fuel, local_fuel_nxt;
+    logic [1:0] local_hp, local_hp_nxt;
     // delay for movement
     logic [19:0] delay_ctr;
     //
     logic [10:0] projectile_strength_nxt;
 
+    // assignments
+    assign hp = local_hp;
+    assign fuel = local_fuel;
     assign tank_xpos = xpos;
     assign tank_ypos = ypos;
-    // state in action
-    always_ff @(posedge clk or posedge rst) begin
+    
+    // states in action
+    always_ff @(posedge clk) begin
         if (rst) begin
-            xpos    <= TANK_X_INIT;
-            ypos    <= TANK_Y_INIT;
-            xpos_nxt    <= TANK_X_INIT;
-            ypos_nxt    <= TANK_Y_INIT;
-            fuel        <= MAX_FUEL;
-            fuel_nxt    <= MAX_FUEL;
+            if(PLAYER_ID == 1) begin
+                xpos    <= TANK_LEFT_X_INIT;
+                ypos    <= TANK_LEFT_Y_INIT;
+                xpos_nxt    <= TANK_LEFT_X_INIT;
+                ypos_nxt    <= TANK_LEFT_Y_INIT;
+            end else begin
+                xpos    <= TANK_RIGHT_X_INIT;
+                ypos    <= TANK_RIGHT_Y_INIT;
+                xpos_nxt    <= TANK_RIGHT_X_INIT;
+                ypos_nxt    <= TANK_RIGHT_Y_INIT;
+            end
+            local_fuel        <= MAX_FUEL;
+            local_fuel_nxt    <= MAX_FUEL;
+            local_hp          <= MAX_HP;
+            local_hp_nxt      <= MAX_HP;
             delay_ctr   <= '0;
             projectile_strength     <= '0;
             projectile_strength_nxt <= '0;
@@ -68,8 +90,8 @@ module tank_ctl (
 
                 MOVING: begin
                     if(moving[0])begin
-                        // check fuel
-                        if(fuel > 0) begin
+                        // check local_fuel
+                        if(local_fuel > 0) begin
                             if(delay_ctr < MOVE_DELAY) begin
                                 delay_ctr <= delay_ctr + 1;
                             end else begin
@@ -89,10 +111,10 @@ module tank_ctl (
                                     ypos_nxt <= ypos;
                                 end
                                 delay_ctr <= '0;
-                                fuel_nxt <= fuel - MOVE_STEP;
+                                local_fuel_nxt <= local_fuel - MOVE_STEP;
                             end
                         end else begin
-                            // cant move, bcs no fuel
+                            // cant move, bcs no local_fuel
                             // maybe flicker/blink indicator 2 times on red->white->red
                             xpos_nxt <= xpos;
                             ypos_nxt <= ypos;
@@ -111,7 +133,7 @@ module tank_ctl (
                         if(delay_ctr < STR_DELAY) begin
                             delay_ctr <= delay_ctr + 1;
                         end else begin
-                            if(projectile_strength >= 0 && projectile_strength <= 1500)
+                            if(projectile_strength >= 0 && projectile_strength <= MAX_STRENGTH)
                                 projectile_strength_nxt <= projectile_strength + 1;
                             else
                                 projectile_strength_nxt <= projectile_strength;
@@ -121,9 +143,15 @@ module tank_ctl (
                 end
 
                 WAITING: begin
-                    //do nothing, wait for 2nd player
+                    //do nothing, wait for hit or 2nd player to end turn
+                    if(damaged == 1) begin
+                        if(local_hp > 0)
+                            local_hp_nxt <= local_hp - 1;
+                        else
+                            local_hp_nxt <= local_hp;
+                    end
                     if(your_turn) begin
-                        fuel <= MAX_FUEL;
+                        local_fuel <= MAX_FUEL;
                         // uncomment after tb
                         //projectile_strength_nxt <= '0;
                     end
@@ -131,7 +159,8 @@ module tank_ctl (
                 end
             endcase
             
-            fuel <= fuel_nxt;
+            local_hp   <= local_hp_nxt;
+            local_fuel <= local_fuel_nxt;
             xpos <= xpos_nxt;
             ypos <= ypos_nxt; // na razie jest plaski teren wiec nie ma znaczneia
             projectile_strength <= projectile_strength_nxt;
@@ -143,10 +172,15 @@ module tank_ctl (
     always_comb begin
         case (tank_st)
             IDLE: begin
-                if (fire_active)
+                if (!your_turn) begin
+                    tank_st_nxt = WAITING;
+                end else if (fire_active) begin
                     tank_st_nxt = FIRING;
-                else if (moving[0] && fuel > 0)
+                end else if (moving[0] && local_fuel > 0) begin
                     tank_st_nxt = MOVING;
+                end else begin
+                    tank_st_nxt = IDLE;
+                end
             end
 
             MOVING: begin

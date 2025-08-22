@@ -5,6 +5,7 @@ module ps2_keyboard_ctl (
     input  logic [7:0] rx_data,
     input  logic       read_data,
 
+    output logic H,
     output logic space,
     output logic arrow_up,
     output logic arrow_down,
@@ -29,8 +30,9 @@ module ps2_keyboard_ctl (
     logic       e0_flag;
 
     // Output registers & state <= state_nxt
-    always_ff @(posedge clk or posedge rst) begin
+    always_ff @(posedge clk) begin
         if (rst) begin
+            H            <= '0;
             space        <= '0;
             arrow_up     <= '0;
             arrow_down   <= '0;
@@ -60,7 +62,8 @@ module ps2_keyboard_ctl (
 
                 SET_KEY: begin
                     case ({e0_flag, scancode})
-                        9'h029: space       <= 1'b1; // should be 9'h029 but my kb is weird
+                        9'h033: H           <= 1'b1; // is ok
+                        9'h029: space       <= 1'b1; // is ok
                         9'h075: arrow_up    <= 1'b1; // should be 9'h175 but my kb is weird
                         9'h072: arrow_down  <= 1'b1; // should be 9'h172 but my kb is weird
                         9'h06B: arrow_left  <= 1'b1; // should be 9'h16B but my kb is weird
@@ -71,7 +74,8 @@ module ps2_keyboard_ctl (
 
                 STOP_KEY: begin
                     case ({e0_flag,scancode})
-                        9'h029: space       <= 1'b0; // should be 9'h029 but my kb is weird
+                        9'h033: H           <= 1'b0; // is ok
+                        9'h029: space       <= 1'b0; // is ok
                         9'h075: arrow_up    <= 1'b0; // should be 9'h175 but my kb is weird
                         9'h072: arrow_down  <= 1'b0; // should be 9'h172 but my kb is weird
                         9'h06B: arrow_left  <= 1'b0; // should be 9'h16B but my kb is weird

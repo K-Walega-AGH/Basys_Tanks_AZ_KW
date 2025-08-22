@@ -15,7 +15,7 @@ module tank_move (
 
   import tank_pkg::*;
 
-    always_ff@(posedge clk, posedge rst) begin
+    always_ff@(posedge clk) begin
         if (rst) begin 
             tank_xpos_out <= TANK_XPOS_START;
             tank_ypos_out <= TANK_YPOS_START;

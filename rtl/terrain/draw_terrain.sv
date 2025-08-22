@@ -19,6 +19,7 @@ module draw_terrain (
     timeprecision 1ps;
 
     import vga_pkg::*;
+    import terrain_pkg::*;
   
 
     /**
@@ -53,7 +54,7 @@ module draw_terrain (
     end
 
     always_comb begin : terrain_comb_blk
-        if((terrain_in.vcount >= 700 && terrain_in.vcount < VER_PIXELS-1) 
+        if((terrain_in.vcount >= TERRAIN_INIT && terrain_in.vcount < VER_PIXELS-1) 
         && (terrain_in.hcount >= 1 && terrain_in.hcount < HOR_PIXELS-1))
             rgb_nxt = 12'h0_f_0;            // - fill with GREEN
         else
@@ -70,7 +71,7 @@ module draw_terrain (
 //     assign dy        = (lfsr_reg * 100) >> 10;
 
 //     // LFSR register
-//     always_ff @(posedge clk or posedge rst) begin
+//     always_ff @(posedge clk) begin
 //         if (rst)
 //             lfsr_reg <= 10'b11_1010_0011;    // seed
 //         else
@@ -79,7 +80,7 @@ module draw_terrain (
 
 // integer i;
 //     // stop terrain generation after 1st hsync
-//     always_ff @(posedge clk or posedge rst) begin
+//     always_ff @(posedge clk) begin
 //         if (rst) begin
 //             for (i = 0; i < HOR_PIXELS-1; i = i + 1) begin
 //                 terrain_y[i] <= 10'd500;

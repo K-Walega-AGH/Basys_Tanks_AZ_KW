@@ -11,13 +11,17 @@
     #(
     parameter N_buf = 2,
     parameter XPOS = 0,
-    parameter YPOS = 0
+    parameter YPOS = 0,
+    // !!! AMOUNTS ONLY IN POWER OF 2 !!!
+    parameter AMOUNT_OF_LETTERS = 32,
+    parameter AMOUNT_OF_LINES = 8
     ) (
     input  logic clk,
     input  logic rst,
 
+    input   logic    [5:0] used_lines,
     input   logic    [7:0] char_line_pixels,
-    output  logic    [7:0] char_xy,
+    output  logic   [14:0] char_xy,
     output  logic    [3:0] char_line,
 
     vga_if.in_m     rect_char_in,
@@ -32,23 +36,20 @@ import vga_pkg::*;
 /**
  * Local variables and signals
  */
-
 localparam WIDTH_CHAR = 8;
 localparam HEIGHT_CHAR = 16;
-localparam AMOUNT_OF_LETTERS = 32;
-localparam AMOUNT_OF_LINES = 8;
 localparam MESS_WIDTH = WIDTH_CHAR*AMOUNT_OF_LETTERS;
 localparam MESS_HEIGHT = HEIGHT_CHAR*AMOUNT_OF_LINES;
-
 
 vga_if  d_rect_char_in();
 
 logic [11:0] rgb_nxt;
-logic  [7:0] char_xy_nxt;  // max 32 characters
-logic  [3:0] char_line_nxt;  // max 16 lines of text
+logic [14:0] char_xy_nxt;
+logic  [3:0] char_line_nxt;
 logic  [2:0] char_pixel_index;
 logic [10:0] local_x, local_y;
-logic  [2:0] line_ctr = '0;
+// line ctr dependant of amount of lines needed
+logic [$clog2(AMOUNT_OF_LINES):0] line_ctr;
 
 /**
  * Internal logic
@@ -80,36 +81,35 @@ always_ff @(posedge clk) begin : rect_char_ff_blk
 end : rect_char_ff_blk
 
 always_comb begin : rect_char_comb_blk
-    if (d_rect_char_in.vblnk || d_rect_char_in.hblnk) begin             // Blanking region:
-        rgb_nxt = rect_char_in.rgb;                  // - make it BACKGROUND.
-        char_xy_nxt   = '0;
-        char_line_nxt = '0;
-        line_ctr      = '0;
-    end else begin                              // Active region:
-        // draw rectangle
-        if (d_rect_char_in.hcount >= XPOS && d_rect_char_in.hcount <= (XPOS + MESS_WIDTH)      // horizontal limits
-        && d_rect_char_in.vcount >= YPOS && d_rect_char_in.vcount <= (YPOS + MESS_HEIGHT))      // vertical limits
-        begin
-            local_x = d_rect_char_in.hcount - XPOS;
-            local_y = d_rect_char_in.vcount - YPOS;
-            line_ctr = local_y[6:4];    //dla znakow: 0..31 -> 0 ; 32..63 -> 1 ; itd
+    // draw rectangle
+    if (d_rect_char_in.hcount >= XPOS && d_rect_char_in.hcount <= (XPOS + MESS_WIDTH)      // horizontal limits
+    && d_rect_char_in.vcount >= YPOS && d_rect_char_in.vcount <= (YPOS + MESS_HEIGHT))      // vertical limits
+    begin
+        local_x = d_rect_char_in.hcount - XPOS;
+        local_y = d_rect_char_in.vcount - YPOS;
+        line_ctr = local_y[$clog2(HEIGHT_CHAR)+$clog2(AMOUNT_OF_LINES):$clog2(HEIGHT_CHAR)];    //dla znakow: 0..31 -> 0 ; 32..63 -> 1 ; itd
 
-            char_xy_nxt = local_x[10:3] + line_ctr*AMOUNT_OF_LETTERS;
+        if(line_ctr < used_lines) begin
+            char_xy_nxt   = local_x[10:3] + line_ctr*AMOUNT_OF_LETTERS;
             char_line_nxt = local_y[3:0];
 
             char_pixel_index = ~(local_x[2:0]) + N_buf;    // HAVE TO negate bcs font_rom starts from LSB ; include delay
 
             if(char_line_pixels[char_pixel_index]) begin
-                rgb_nxt = 12'hF_F_F;  
+                rgb_nxt = 12'hF_F_F;
             end else begin
-                rgb_nxt = 12'h0_0_0;     // or 12'h0_0_0 for BLACK background
+                rgb_nxt = 12'h0_0_0;     // 12'h0_0_0 for BLACK background
             end
-        end else begin                          // The rest of active display pixels:
-            rgb_nxt = rect_char_in.rgb;              // - fill with BACKGROUND.
+        end else begin
+            rgb_nxt = 12'h0_0_0;     // 12'h0_0_0 for BLACK background
             char_xy_nxt   = '0;
             char_line_nxt = '0;
-            line_ctr      = '0;
         end
+    end else begin                          // The rest of active display pixels:
+        rgb_nxt = rect_char_in.rgb;              // - fill with BACKGROUND.
+        char_xy_nxt   = '0;
+        char_line_nxt = '0;
+        line_ctr      = '0;
     end
 end : rect_char_comb_blk
 
@@ -152,6 +152,12 @@ delay #(.WIDTH(1), .CLK_DEL(N_buf)) d_hblnk (
     .rst(rst),
     .din(rect_char_in.hblnk),
     .dout(d_rect_char_in.hblnk)
+);
+delay #(.WIDTH(12), .CLK_DEL(N_buf)) d_rgb (
+    .clk(clk),
+    .rst(rst),
+    .din(rect_char_in.rgb),
+    .dout(d_rect_char_in.rgb)
 );
 
 endmodule
