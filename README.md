@@ -52,6 +52,10 @@ Tak jak na labolatioriach - wszystkie symulacje uruchamiane są skryptem `run_si
 
 Skrypt ten uruchamia generację bitstreamu, który finalnie znajdzie się w folderze `results`. Następnie sprawdza logi z syntezy i implementacji pod kątem ewentualnych ostrzeżeń (_warning_, _critical warning_) i błędów (_error_), a w razie ich wystąpienie kopiuje ich treść do pliku `results/warning_summary.log`.
 
+### `get_errors.sh`
+
+Skrypt ten można uruchomić po generacji bitstreamu (udanej, bądź nie udanej), który w folderze `results` utworzy plik `critical_errors_only.log` zawierający wszystkie CRITICAL_WARNING i ERROR zgłoszone w pliku `results/warning_summary.log`.
+
 ### `program_fpga.sh`
 
 Aby skrypt poprawnie wgrał bitstream do FPGA, w folderze `results` musi znajdować się **tylko jeden** plik z rozszerzeniem `.bit`.
