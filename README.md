@@ -56,6 +56,10 @@ Skrypt ten uruchamia generację bitstreamu, który finalnie znajdzie się w fold
 
 Skrypt ten można uruchomić po generacji bitstreamu (udanej, bądź nie udanej), który w folderze `results` utworzy plik `critical_errors_only.log` zawierający wszystkie CRITICAL_WARNING i ERROR zgłoszone w pliku `results/warning_summary.log`.
 
+### `open_vivado.sh`
+
+Prosty skrypt, żeby uruchomić Vivado po generacji bitstreamu w celu dokładnego sprawdzenia występujących błędów (Project Summary, Timing Report, etc).
+
 ### `program_fpga.sh`
 
 Aby skrypt poprawnie wgrał bitstream do FPGA, w folderze `results` musi znajdować się **tylko jeden** plik z rozszerzeniem `.bit`.
