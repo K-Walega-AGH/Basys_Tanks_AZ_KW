@@ -1,94 +1,77 @@
-/**
- * San Jose State University
- * EE178 Lab #4
- * Author: prof. Eric Crabilla
- *
- * Modified by:
- * 2025  AGH University of Science and Technology
- * MTM UEC2
- * Piotr Kaczmarczyk
- *
- * Description:
- * The project top module.
- */
 
 module top_vga (
-        input  logic clk,
-        input  logic rst,
-        input  logic clk100MHz,
-        inout  logic ps2_clk,
-        inout  logic ps2_data,
-        output logic vs,
-        output logic hs,
-        output logic [3:0] r,
-        output logic [3:0] g,
-        output logic [3:0] b,
-        output logic [7:0] sseg,
-        output logic [3:0] an,
-        output logic [15:11] led
-    );
-
-    timeunit 1ns;
-    timeprecision 1ps;
+    input  logic clk,
+    input  logic rst_btnC,
+    input  logic clk100MHz,
+    inout  logic ps2_clk,
+    inout  logic ps2_data,
+    output logic vs,
+    output logic hs,
+    output logic [3:0] r,
+    output logic [3:0] g,
+    output logic [3:0] b,
+    output logic [7:0] sseg,
+    output logic [3:0] an,
+    output logic [15:11] led
+);
 
     /**
      * Local variables and signals
      */
 
-    // VGA signals from timing
-    vga_if vga_timing();
-    // VGA signals from background
-    vga_if vga_bg();
-    // VGA signals from terrain
-    vga_if vga_terrain();
-    // VGA signals from tanks
-    vga_if vga_tank_LEFT();
-    vga_if vga_tank_RIGHT();
-    // VGA signals from projectile
-    vga_if vga_projectile();
-    // VGA signals from interface
-    vga_if vga_interface();
-    // VGA signals from help module
-    vga_if vga_help();
-
-    // tank movement and action
-    logic  [1:0] moving, change_angle;
-    logic fire_active;
-    // signals necessary for projectile
-    logic [11:0] tank_xpos_LEFT, tank_ypos_LEFT;
-    logic [11:0] tank_xpos_RIGHT, tank_ypos_RIGHT;
-    logic        damaged_LEFT, damaged_RIGHT;
-    logic  [6:0] barrel_end_xpos_LEFT, barrel_end_ypos_LEFT, barrel_end_xpos_RIGHT, barrel_end_ypos_RIGHT;
-    logic        end_turn;
-    logic  [7:0] angle_LEFT, angle_RIGHT;
-    logic [10:0] projectile_strength_LEFT, projectile_strength_RIGHT;
-    logic  [1:0] hp_LEFT, hp_RIGHT;
-    logic [10:0] fuel_LEFT, fuel_RIGHT;
-    // signal to show help
-    logic        show_help;
+    // rst from button or internal signal
+    logic rst;
+    // inputs
+    logic arrow_up_ps2, arrow_down_ps2, arrow_left_ps2, arrow_right_ps2;
+    logic space_ps2, enter_ps2, key_5_ps2, key_1_ps2, F_ps2, H_ps2;
+    logic arrow_up, arrow_down, arrow_left, arrow_right;
+    logic space, enter, key_5, key_1, F, H;
+    // named signals
+    logic [1:0] moving, change_angle;
+    logic       fire_active, show_help;
+    logic [1:0] player_turn;
+    // signals to control game state
+    logic       start_game;
+    // LEFT  won => 2'b01
+    // RIGHT won => 2'b11
+    logic  [1:0] game_over;
+    logic  [1:0]  game_over_CODE;
+    logic        restart_game;
+    logic        internal_rst;
     // ps2 signals for hex display
     logic  [7:0] rx_data;
     logic        read_data;
-    // signals from top_vga_ctl
-    logic  [1:0] hp_CURRENT, hp_ENEMY;
-    logic  [7:0] angle;
-    logic [10:0] projectile_strength;
-    logic [10:0] fuel;
-    logic [11:0] barrel_final_xpos, barrel_final_ypos;
-    logic [11:0] enemy_xpos, enemy_ypos;
-    logic        enemy_hit;
-    // bit 0 => LEFT ; bit 1 => RIGHT
-    logic  [1:0] player_turn;
+
+    // interfaces from different states
+    vga_if vga_timing();
+    vga_if vga_bg();
+    vga_if vga_start_screen();
+    vga_if vga_main_game();
+    vga_if vga_end_screen();
+    vga_if vga_top_if();
 
     /**
      * Signals assignments
      */
-    assign vs = vga_help.vsync;
-    assign hs = vga_help.hsync;
-    assign {r,g,b} = vga_help.rgb;
-    // led for debug
-    assign led = {fire_active, change_angle[1:0], moving[1:0]};
-    // hit from projectile to tanks
+
+    // --------- output signals for top --------- 
+    assign vs = vga_top_if.vsync;
+    assign hs = vga_top_if.hsync;
+    assign {r,g,b} = vga_top_if.rgb;
+    // --------- inputs into named signals --------- 
+    // start_screen
+    assign start_game = enter;
+    // main_game
+    assign moving = {arrow_right, (arrow_left || arrow_right)};
+    assign change_angle = {arrow_up, (arrow_up || arrow_down)};
+    assign fire_active = space;
+    assign show_help = H;
+    // start_screen
+    assign restart_game = enter;
+    // --------- led for debug --------- 
+    assign led = {fire_active, moving, change_angle};
+    assign game_over_CODE[1] = (player_turn == 2'b01) ? 1'b1 : 1'b0; // if left then P1 ff'ed
+
     /**
      * Submodules instances
      */
@@ -103,7 +86,6 @@ module top_vga (
         .hsync  (vga_timing.hsync),
         .hblnk  (vga_timing.hblnk)
     );
-
     draw_bg u_draw_bg (
         .clk(clk),
         .rst(rst),
@@ -112,171 +94,122 @@ module top_vga (
         .bg_out (vga_bg)
     );
 
-    draw_terrain u_draw_terrain (
+    start_screen u_start_screen (
         .clk(clk),
         .rst(rst),
 
-        .terrain_in  (vga_bg),
-        .terrain_out (vga_terrain)
+        .vga_start_screen_in(vga_bg),
+        .vga_start_screen_out(vga_start_screen)
     );
-    tank
-    #(
-        .PLAYER_ID(1)
-    ) u_tank_LEFT (
+
+    main_game u_main_game (
         .clk(clk),
         .rst(rst),
 
         .moving(moving),
         .change_angle(change_angle),
         .fire_active(fire_active),
-        .your_turn(player_turn[0]),
-
-        .damaged(damaged_LEFT),
-
-        .angle(angle_LEFT),
-        .projectile_strength(projectile_strength_LEFT),
-        .hp(hp_LEFT),
-        .fuel(fuel_LEFT),
-        .tank_xpos(tank_xpos_LEFT),
-        .tank_ypos(tank_ypos_LEFT),
-        .barrel_end_xpos(barrel_end_xpos_LEFT),
-        .barrel_end_ypos(barrel_end_ypos_LEFT),
-
-        .tank_in  (vga_terrain),
-        .tank_out (vga_tank_LEFT)
-    );
-    tank
-    #(
-        .PLAYER_ID(2)
-    ) u_tank_RIGHT (
-        .clk(clk),
-        .rst(rst),
-
-        .moving(moving),
-        .change_angle(change_angle),
-        .fire_active(fire_active),
-        .your_turn(player_turn[1]),
-
-        .damaged(damaged_RIGHT),
-
-        .angle(angle_RIGHT),
-        .projectile_strength(projectile_strength_RIGHT),
-        .hp(hp_RIGHT),
-        .fuel(fuel_RIGHT),
-        .tank_xpos(tank_xpos_RIGHT),
-        .tank_ypos(tank_ypos_RIGHT),
-        .barrel_end_xpos(barrel_end_xpos_RIGHT),
-        .barrel_end_ypos(barrel_end_ypos_RIGHT),
-
-        .tank_in  (vga_tank_LEFT),
-        .tank_out (vga_tank_RIGHT)
-    );
-    projectile u_projectile (
-        .clk(clk),
-        .rst(rst),
-
-        .player_turn(player_turn),
-        .fire_active(fire_active),
-        .angle(angle),
-        .projectile_strength(projectile_strength),
-
-        .barrel_end_xpos(barrel_final_xpos),
-        .barrel_end_ypos(barrel_final_ypos),
-
-        .enemy_xpos(enemy_xpos),
-        .enemy_ypos(enemy_ypos),
-        .enemy_hit(enemy_hit),
-        .end_turn(end_turn),
-
-        .projectile_in(vga_tank_RIGHT),
-        .projectile_out(vga_projectile)
-    );
-    draw_help u_draw_help(
-        .clk(clk),
-        .rst(rst),
-
         .show_help(show_help),
 
-        .help_in(vga_interface),
-        .help_out(vga_help)
+        .player_turn_out(player_turn),
+        .game_over(game_over),
+        
+        .vga_main_game_in(vga_bg),
+        .vga_main_game_out(vga_main_game)
     );
-    player_interface u_player_interface (
+    FF_15 u_ff15 (
         .clk(clk),
         .rst(rst),
 
-        .hp_CURRENT(hp_CURRENT),
-        .hp_ENEMY(hp_ENEMY),
-        .angle(angle),
-        .projectile_strength(projectile_strength),
-        .fuel(fuel),
+        .rx_data(rx_data),
 
-        .interface_in(vga_projectile),
-        .interface_out(vga_interface)
+        .game_over_CODE(game_over_CODE[0])
+    );
+
+    end_screen u_end_screen (
+        .clk(clk),
+        .rst(rst_btnC),
+
+        .game_over(game_over[1] || game_over_CODE[1]),
+        .restart_game(restart_game),
+
+        .internal_rst(internal_rst),
+
+        .vga_end_screen_in(vga_bg),
+        .vga_end_screen_out(vga_end_screen)
     );
 
     ps2_keyboard u_ps2_keyboard(
-    .clk100MHz(clk100MHz),
-    .clk60MHz(clk),
-    .rst(rst),
-
-    .ps2_clk(ps2_clk),
-    .ps2_data(ps2_data),
-
-    .moving(moving),
-    .change_angle(change_angle),
-    .fire_active(fire_active),
-    .show_help(show_help),
-
-    .rx_data_out(rx_data),
-    .read_data_out(read_data)
-    );
+        .clk100MHz(clk100MHz),
+        .clk60MHz(clk),
+        .rst(rst),
+    
+        .ps2_clk(ps2_clk),
+        .ps2_data(ps2_data),
+    
+        .arrow_left(arrow_left_ps2),
+        .arrow_right(arrow_right_ps2),
+        .arrow_up(arrow_up_ps2),
+        .arrow_down(arrow_down_ps2),
+        .space(space_ps2),
+        .enter(enter_ps2),
+        .key_5(key_5_ps2),
+        .key_1(key_1_ps2),
+        .F(F_ps2),
+        .H(H_ps2),
+    
+        .rx_data_out(rx_data),
+        .read_data_out(read_data)
+        );
     ps2_display u_ps2_display(
-    .clk(clk),
-    .rst(rst),
-
-    .rx_data(rx_data),
-    .read_data(read_data),
-
-    .sseg(sseg),
-    .an(an)
-    );
-
-    // instance of top_vga_ctl
-    top_vga_ctl u_vga_ctl (
         .clk(clk),
         .rst(rst),
-        // input signals
-        .hp_LEFT(hp_LEFT),
-        .hp_RIGHT(hp_RIGHT),
-        .angle_LEFT(angle_LEFT),
-        .angle_RIGHT(angle_RIGHT),
-        .strength_LEFT(projectile_strength_LEFT),
-        .strength_RIGHT(projectile_strength_RIGHT),
-        .fuel_LEFT(fuel_LEFT),
-        .fuel_RIGHT(fuel_RIGHT),
-        .tank_xpos_LEFT(tank_xpos_LEFT),
-        .tank_ypos_LEFT(tank_ypos_LEFT),
-        .tank_xpos_RIGHT(tank_xpos_RIGHT),
-        .tank_ypos_RIGHT(tank_ypos_RIGHT),
-        .barrel_end_xpos_LEFT(barrel_end_xpos_LEFT),
-        .barrel_end_ypos_LEFT(barrel_end_ypos_LEFT),
-        .barrel_end_xpos_RIGHT(barrel_end_xpos_RIGHT),
-        .barrel_end_ypos_RIGHT(barrel_end_ypos_RIGHT),
-        .end_turn(end_turn),
-        .enemy_hit(enemy_hit),
-        // output signals
-        .player_turn(player_turn),
-        .hp_CURRENT(hp_CURRENT),
-        .hp_ENEMY(hp_ENEMY),
-        .angle(angle),
-        .projectile_strength(projectile_strength),
-        .fuel(fuel),
-        .barrel_final_xpos(barrel_final_xpos),
-        .barrel_final_ypos(barrel_final_ypos),
-        .enemy_xpos(enemy_xpos),
-        .enemy_ypos(enemy_ypos),
-        .damaged_LEFT(damaged_LEFT),
-        .damaged_RIGHT(damaged_RIGHT)
+    
+        .rx_data(rx_data),
+        .read_data(read_data),
+    
+        .sseg(sseg),
+        .an(an)
+        );
+
+    top_vga_ctl u_top_vga_ctl (
+        .clk(clk),
+        .rst_btnC(rst_btnC),
+
+        .start_game(start_game),
+        .game_over(game_over[0] || game_over_CODE[0]),
+        .restart_game(restart_game),
+        .internal_rst(internal_rst),
+
+        .arrow_left_in(arrow_left_ps2),
+        .arrow_right_in(arrow_right_ps2),
+        .arrow_up_in(arrow_up_ps2),
+        .arrow_down_in(arrow_down_ps2),
+        .space_in(space_ps2),
+        .enter_in(enter_ps2),
+        .key_5_in(key_5_ps2),
+        .key_1_in(key_1_ps2),
+        .F_in(F_ps2),
+        .H_in(H_ps2),
+
+        .vga_start_screen(vga_start_screen),
+        .vga_main_game(vga_main_game),
+        .vga_end_screen(vga_end_screen),
+
+        .arrow_left(arrow_left),
+        .arrow_right(arrow_right),
+        .arrow_up(arrow_up),
+        .arrow_down(arrow_down),
+        .space(space),
+        .enter(enter),
+        .key_5(key_5),
+        .key_1(key_1),
+        .F(F),
+        .H(H),
+
+        .rst_out(rst),
+
+        .vga_top_if(vga_top_if)
     );
 
 endmodule

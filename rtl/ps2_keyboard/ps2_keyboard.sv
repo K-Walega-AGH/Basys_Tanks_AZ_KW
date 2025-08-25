@@ -6,10 +6,16 @@ module ps2_keyboard (
     input  logic ps2_clk,
     input  logic ps2_data,
 
-    output logic [1:0] moving,
-    output logic [1:0] change_angle,
-    output logic       fire_active,
-    output logic       show_help,
+    output logic       arrow_left,
+    output logic       arrow_right,
+    output logic       arrow_up,
+    output logic       arrow_down,
+    output logic       space,
+    output logic       enter,
+    output logic       key_5,
+    output logic       key_1,
+    output logic       F,
+    output logic       H,
 
     output logic [7:0] rx_data_out,
     output logic       read_data_out
@@ -24,20 +30,13 @@ module ps2_keyboard (
     logic       read_data;
     logic       busy;
     logic       err;
-    // keys pressed signals
-    logic arrow_up, arrow_down, arrow_left, arrow_right;
-    logic space, H;
+    // keys pressed 100MHz signals
     logic arrow_up100MHz, arrow_down100MHz, arrow_left100MHz, arrow_right100MHz;
-    logic space100MHz, H100MHz;
+    logic space100MHz, enter100MHz, key_1_100MHz, key_5_100MHz, F100MHz, H100MHz;
 
     /**
      * Signals assignments
      */
-
-    assign show_help = H;
-    assign fire_active = space;
-    assign moving = {arrow_right, (arrow_left || arrow_right)};
-    assign change_angle = {arrow_up, (arrow_up || arrow_down)};
 
     assign rx_data_out = rx_data;
     assign read_data_out = read_data;
@@ -64,6 +63,10 @@ module ps2_keyboard (
         .rx_data    (rx_data),
         .read_data  (read_data),
         .H          (H100MHz),
+        .F          (F100MHz),
+        .key_1      (key_1_100MHz),
+        .key_5      (key_5_100MHz),
+        .enter      (enter100MHz),
         .space      (space100MHz),
         .arrow_up   (arrow_up100MHz),
         .arrow_down (arrow_down100MHz),
@@ -75,6 +78,10 @@ module ps2_keyboard (
         .rst(rst),
         // input signals
         .H_in          (H100MHz),
+        .F_in          (F100MHz),
+        .key_1_in      (key_1_100MHz),
+        .key_5_in      (key_5_100MHz),
+        .enter_in      (enter100MHz),
         .space_in      (space100MHz),
         .arrow_up_in   (arrow_up100MHz),
         .arrow_down_in (arrow_down100MHz),
@@ -82,6 +89,10 @@ module ps2_keyboard (
         .arrow_right_in(arrow_right100MHz),
         // outputs sync'ed with clk60MHz
         .H          (H),
+        .F          (F),
+        .key_1      (key_1),
+        .key_5      (key_5),
+        .enter      (enter),
         .space      (space),
         .arrow_up   (arrow_up),
         .arrow_down (arrow_down),

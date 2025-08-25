@@ -75,6 +75,7 @@ draw_rect_char
     .clk(clk),
     .rst(rst),
 
+    .toggle_colors(1'b0),
     .used_lines(used_lines),
     .char_line_pixels(char_line_pixels),
     .char_xy(char_xy),

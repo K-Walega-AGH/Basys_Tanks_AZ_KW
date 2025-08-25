@@ -11,7 +11,7 @@ import projectile_pkg::*;
  * Local variables and signals
  */
 
-reg [11:0] rom [0:(PROJECTILE_WIDTH*PROJECTILE_HEIGHT -1)];
+reg [11:0] rom [0:(PROJECTILE_RADIUS*PROJECTILE_RADIUS -1)];
 
 /**
  * Memory initialization from a file

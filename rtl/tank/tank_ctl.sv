@@ -44,7 +44,7 @@ module tank_ctl
     logic [11:0] ypos, ypos_nxt;
     // tank fuel
     logic [10:0] local_fuel, local_fuel_nxt;
-    logic [1:0] local_hp, local_hp_nxt;
+    logic [1:0] local_hp;
     // delay for movement
     logic [19:0] delay_ctr;
     // projectile strength value
@@ -76,7 +76,6 @@ module tank_ctl
             local_fuel        <= MAX_FUEL;
             local_fuel_nxt    <= MAX_FUEL;
             local_hp          <= MAX_HP;
-            local_hp_nxt      <= MAX_HP;
             delay_ctr         <= '0;
             projectile_strength     <= '0;
             projectile_strength_nxt <= '0;
@@ -149,10 +148,13 @@ module tank_ctl
                 WAITING: begin
                     //wait for hit or 2nd player to end turn
                     if(damaged == 1) begin
-                        if(local_hp > 0)
-                            local_hp_nxt <= local_hp - 1;
-                        else
-                            local_hp_nxt <= local_hp;
+                        if(local_hp > 0) begin
+                            local_hp <= local_hp - 1;
+                        end else begin
+                            local_hp <= local_hp;
+                        end
+                    end else begin
+                        local_hp <= local_hp;
                     end
                     if(your_turn_posedge) begin
                         local_fuel_nxt <= MAX_FUEL;
@@ -161,7 +163,6 @@ module tank_ctl
                 end
             endcase
             
-            local_hp   <= local_hp_nxt;
             local_fuel <= local_fuel_nxt;
             xpos <= xpos_nxt;
             ypos <= ypos_nxt;

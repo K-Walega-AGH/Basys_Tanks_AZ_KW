@@ -12,6 +12,8 @@
     parameter N_buf = 2,
     parameter XPOS = 0,
     parameter YPOS = 0,
+    parameter TEXT_COLOR = 12'hf_f_f,   //white
+    parameter BG_COLOR = 12'h0_0_0,     //black
     // !!! AMOUNTS ONLY IN POWER OF 2 !!!
     parameter AMOUNT_OF_LETTERS = 32,
     parameter AMOUNT_OF_LINES = 8
@@ -19,10 +21,11 @@
     input  logic clk,
     input  logic rst,
 
-    input   logic    [5:0] used_lines,
-    input   logic    [7:0] char_line_pixels,
-    output  logic   [14:0] char_xy,
-    output  logic    [3:0] char_line,
+    input  logic          toggle_colors,
+    input  logic    [5:0] used_lines,
+    input  logic    [7:0] char_line_pixels,
+    output logic   [14:0] char_xy,
+    output logic    [3:0] char_line,
 
     vga_if.in_m     rect_char_in,
     vga_if.out_m    rect_char_out    // has to be delayed
@@ -95,12 +98,18 @@ always_comb begin : rect_char_comb_blk
             char_pixel_index = ~(local_x[2:0]) + N_buf;    // HAVE TO negate bcs font_rom starts from LSB ; include delay
 
             if(char_line_pixels[char_pixel_index]) begin
-                rgb_nxt = 12'hF_F_F;
+                if(!toggle_colors)
+                    rgb_nxt = TEXT_COLOR;  // text color
+                    else
+                    rgb_nxt = BG_COLOR;    // background color
             end else begin
-                rgb_nxt = 12'h0_0_0;     // 12'h0_0_0 for BLACK background
+                if(!toggle_colors)
+                    rgb_nxt = BG_COLOR;    // background color
+                else
+                    rgb_nxt = TEXT_COLOR;  // text color
             end
         end else begin
-            rgb_nxt = 12'h0_0_0;     // 12'h0_0_0 for BLACK background
+            rgb_nxt = BG_COLOR;        // background color
             char_xy_nxt   = '0;
             char_line_nxt = '0;
         end

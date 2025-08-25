@@ -26,10 +26,13 @@ module projectile_ctl
 
     output logic        enemy_hit,
     output logic        end_turn,
+    output logic        activate_explosion,
     output logic        show_bullet,
     
     output logic [11:0] projectile_xpos,
-    output logic [11:0] projectile_ypos
+    output logic [11:0] projectile_ypos,
+    output logic [11:0] explosion_xpos,
+    output logic [11:0] explosion_ypos
 );
 
     timeunit 1ns;
@@ -38,6 +41,7 @@ module projectile_ctl
     import vga_pkg::*;
     import projectile_pkg::*;
     import tank_pkg::*;
+    import interface_pkg::*;
 
     // FSM states
     typedef enum logic [2:0] {
@@ -46,7 +50,8 @@ module projectile_ctl
         RISING,
         FALLING,
         COLLISION,
-        WAITING
+        OUT_OF_BOUNDS,
+        FINISHED
     } projectile_state;
 
     projectile_state projectile_st, projectile_st_nxt;
@@ -62,8 +67,9 @@ module projectile_ctl
     logic collision;
 
     // signals assignments
-    assign end_turn = (projectile_st == WAITING);
-
+    assign enemy_hit = (projectile_st == COLLISION);
+    assign activate_explosion = (projectile_st == COLLISION);
+    assign end_turn = (projectile_st == OUT_OF_BOUNDS);
     // FSM logic
     always_ff @(posedge clk) begin
         if (rst) begin
@@ -76,11 +82,12 @@ module projectile_ctl
             delay_ctr <= '0;
 
             collision   <= '0;
-            enemy_hit   <= '0;
             show_bullet <= '0;
 
             projectile_xpos <= PRJTL_X_INIT;
             projectile_ypos <= PRJTL_Y_INIT;
+            explosion_xpos <= PRJTL_X_INIT;
+            explosion_ypos <= PRJTL_Y_INIT;
 
             projectile_st    <= IDLE;
         end else begin
@@ -124,34 +131,15 @@ module projectile_ctl
                         end
                     end
                     // check for collision
-                    if(player_turn == 2'b01) begin
-                        if ( (xpos_nxt[31:20]+PROJECTILE_WIDTH/2 >= enemy_xpos && xpos_nxt[31:20]+PROJECTILE_WIDTH/2 <= enemy_xpos + TANK_WIDTH) &&
-                             (ypos_nxt[31:20]+PROJECTILE_HEIGHT/2 >= enemy_ypos + TANK_EMPTY_HEIGHT && ypos_nxt[31:20]+PROJECTILE_HEIGHT/2 <= enemy_ypos + TANK_HEIGHT) ) begin
-                            collision <= 1;
-                            vx <= '0;
-                            vy <= '0;
-                            temp_vx     <= '0;
-                            temp_vy     <= '0;
-                            xpos_nxt[31:20] <= barrel_end_xpos;
-                            ypos_nxt[31:20] <= barrel_end_ypos;
-                            show_bullet <= '0;
-                        end else begin
-                            collision <= 0;
-                        end
+                    if ( (xpos_nxt[31:20]+PROJECTILE_RADIUS/2 >= enemy_xpos && xpos_nxt[31:20]+PROJECTILE_RADIUS/2 < enemy_xpos + TANK_WIDTH) &&
+                         (ypos_nxt[31:20]+PROJECTILE_RADIUS/2 >= enemy_ypos + TANK_EMPTY_HEIGHT && ypos_nxt[31:20]+PROJECTILE_RADIUS/2 < enemy_ypos + TANK_HEIGHT) ) begin
+                        collision <= 1;
+                        vx <= '0;
+                        vy <= '0;
+                        temp_vx     <= '0;
+                        temp_vy     <= '0;
                     end else begin
-                        if ( (xpos_nxt[31:20] >= enemy_xpos && xpos_nxt[31:20] <= enemy_xpos + TANK_WIDTH) &&
-                             (ypos_nxt[31:20]+PROJECTILE_HEIGHT/2 >= enemy_ypos + TANK_EMPTY_HEIGHT && ypos_nxt[31:20]+PROJECTILE_HEIGHT/2 <= enemy_ypos + TANK_HEIGHT) ) begin
-                            collision <= 1;
-                            vx <= '0;
-                            vy <= '0;
-                            temp_vx     <= '0;
-                            temp_vy     <= '0;
-                            xpos_nxt[31:20] <= barrel_end_xpos;
-                            ypos_nxt[31:20] <= barrel_end_ypos;
-                            show_bullet <= '0;
-                        end else begin
-                            collision <= 0;
-                        end
+                        collision <= 0;
                     end
                 end
                 FALLING: begin
@@ -171,44 +159,30 @@ module projectile_ctl
                         end
                     end
                     // check for collision
-                    if(player_turn == 2'b01) begin
-                        if ( (xpos_nxt[31:20]+PROJECTILE_WIDTH/2 >= enemy_xpos && xpos_nxt[31:20]+PROJECTILE_WIDTH/2 <= enemy_xpos + TANK_WIDTH) &&
-                             (ypos_nxt[31:20]+PROJECTILE_HEIGHT/2 >= enemy_ypos + TANK_EMPTY_HEIGHT && ypos_nxt[31:20]+PROJECTILE_HEIGHT/2 <= enemy_ypos + TANK_HEIGHT) ) begin
-                            collision <= 1;
-                            vx <= '0;
-                            vy <= '0;
-                            temp_vx     <= '0;
-                            temp_vy     <= '0;
-                            xpos_nxt[31:20] <= barrel_end_xpos;
-                            ypos_nxt[31:20] <= barrel_end_ypos;
-                            show_bullet <= '0;
-                        end else begin
-                            collision <= 0;
-                        end
+                    if ( (xpos_nxt[31:20]+PROJECTILE_RADIUS/2 >= enemy_xpos && xpos_nxt[31:20]+PROJECTILE_RADIUS/2 < enemy_xpos + TANK_WIDTH) &&
+                         (ypos_nxt[31:20]+PROJECTILE_RADIUS/2 >= enemy_ypos + TANK_EMPTY_HEIGHT && ypos_nxt[31:20]+PROJECTILE_RADIUS/2 < enemy_ypos + TANK_HEIGHT) ) begin
+                        collision <= 1;
+                        vx <= '0;
+                        vy <= '0;
+                        temp_vx     <= '0;
+                        temp_vy     <= '0;
                     end else begin
-                        if ( (xpos_nxt[31:20] >= enemy_xpos && xpos_nxt[31:20] <= enemy_xpos + TANK_WIDTH) &&
-                             (ypos_nxt[31:20]+PROJECTILE_HEIGHT/2 >= enemy_ypos + TANK_EMPTY_HEIGHT && ypos_nxt[31:20]+PROJECTILE_HEIGHT/2 <= enemy_ypos + TANK_HEIGHT) ) begin
-                            collision <= 1;
-                            vx <= '0;
-                            vy <= '0;
-                            temp_vx     <= '0;
-                            temp_vy     <= '0;
-                            xpos_nxt[31:20] <= barrel_end_xpos;
-                            ypos_nxt[31:20] <= barrel_end_ypos;
-                            show_bullet <= '0;
-                        end else begin
-                            collision <= 0;
-                        end
+                        collision <= 0;
                     end
                 end
 
                 COLLISION: begin
-                    enemy_hit <= '1;
+                    // DETERMINE TYPE OF COLLISION (TERRAIN / TANK) AND DO STUFF ACCORDINGLY
+                    collision <= 0;
+                    show_bullet <= '0;
+                    explosion_xpos <= xpos_nxt[31:20];
+                    explosion_ypos <= ypos_nxt[31:20];
                 end
 
-                WAITING: begin
-                    enemy_hit <= '0;
-                    // DETERMINE TYPE OF COLLISION (TERRAIN / TANK) AND DO STUFF ACCORDINGLY
+                OUT_OF_BOUNDS: begin
+                end
+
+                FINISHED: begin
                 end
             endcase
 
@@ -250,21 +224,26 @@ module projectile_ctl
                 if (collision)
                     projectile_st_nxt = COLLISION;
                 else
-                    if(ypos_nxt[31:20] + vy[31:20] > VER_PIXELS)
-                        projectile_st_nxt = WAITING;
+                    if( (xpos_nxt[31:20] - vx[31:20] <= 0 || xpos_nxt[31:20] + vx[31:20] > HOR_PIXELS) ||
+                        (ypos_nxt[31:20] - vy[31:20] <= 0 || ypos_nxt[31:20] + vy[31:20] > GRAY_BOX_INIT))
+                        projectile_st_nxt = OUT_OF_BOUNDS;
                     else
                         projectile_st_nxt = FALLING;
             end
 
             COLLISION: begin
-                projectile_st_nxt = WAITING;
+                projectile_st_nxt = FINISHED;
             end
 
-            WAITING: begin
+            OUT_OF_BOUNDS: begin
+                projectile_st_nxt = FINISHED;
+            end
+
+            FINISHED: begin
                 if(player_turn == 2'b01 || player_turn == 2'b10)
                     projectile_st_nxt = IDLE;
                 else
-                    projectile_st_nxt = WAITING;
+                    projectile_st_nxt = FINISHED;
             end
         endcase
     end

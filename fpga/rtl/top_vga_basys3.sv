@@ -59,8 +59,11 @@ module top_vga_basys3 (
     clk_wiz_1 u_clk_wiz_1
     (
         // Clock out ports
+        .clk100MHz_ce(1'b1),
         .clk100MHz(clk100MHz),
+        .clk60MHz_ce(1'b1),
         .clk60MHz(clk60MHz),
+        .clk40MHz_ce(1'b1),
         .clk40MHz(clk40MHz),
         // Status and control signals
         .locked(locked),
@@ -89,7 +92,7 @@ module top_vga_basys3 (
 
     top_vga u_top_vga (
         .clk(clk60MHz),
-        .rst(btnC),
+        .rst_btnC(btnC),
         .r(vgaRed),
         .g(vgaGreen),
         .b(vgaBlue),

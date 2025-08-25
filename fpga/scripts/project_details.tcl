@@ -26,33 +26,34 @@ set target xc7a35tcpg236-1
 #-----------------------------------------------------#
 # Specify .xdc files location                   -- EDIT
 set xdc_files {
-    ../fpga/constraints/clk_wiz_0.xdc
-    ../fpga/constraints/clk_wiz_0_late.xdc
     ../fpga/constraints/clk_wiz_1.xdc
     constraints/top_vga_basys3.xdc
 }
 
 # Specify SystemVerilog design files location   -- EDIT
 set sv_files {
-    ../rtl/vga/vga_if.sv
-    ../rtl/vga/vga_pkg.sv
-    ../rtl/tank/tank_pkg.sv
-    ../rtl/projectile/projectile_pkg.sv
-    ../rtl/delay.sv
     ../rtl/vga/vga_timing.sv
+    ../rtl/vga/vga_if.sv
+    ../rtl/vga_if_delay.sv
+    ../rtl/delay.sv
+    ../rtl/vga/vga_pkg.sv
+    ../rtl/terrain/terrain_pkg.sv
+    ../rtl/tank/tank_pkg.sv
+    ../rtl/interface/interface_pkg.sv
+    ../rtl/projectile/projectile_pkg.sv
     ../rtl/ps2_keyboard/ps2_keyboard_latch.sv
     ../rtl/ps2_keyboard/ps2_keyboard_ctl.sv
     ../rtl/ps2_keyboard/ps2_keyboard.sv
+    ../rtl/ps2_keyboard/ps2_display.sv
     ../rtl/background/draw_bg.sv
     ../rtl/terrain/draw_terrain.sv
-    ../rtl/terrain/terrain_pkg.sv
     ../rtl/interface/draw_if_bg.sv
     ../rtl/interface/draw_hp.sv
     ../rtl/interface/draw_strength.sv
     ../rtl/interface/draw_fuel.sv
     ../rtl/interface/draw_angle.sv
-    ../rtl/interface/interface_pkg.sv
     ../rtl/interface/player_interface.sv
+    ../rtl/draw_img/draw_param_text_blink.sv
     ../rtl/draw_img/draw_param_text.sv
     ../rtl/draw_img/draw_rect_char.sv
     ../rtl/draw_img/draw_rect_image.sv
@@ -68,6 +69,8 @@ set sv_files {
     ../rtl/rom/tank_rom.sv
     ../rtl/rom/barrel_rom.sv
     ../rtl/rom/projectile_rom.sv
+    ../rtl/rom/photo_tanks_rom.sv
+    ../rtl/rom/explosion_rom.sv
     ../rtl/rom/help_rom.sv
     ../rtl/rom/text_rom.sv
     ../rtl/tank/draw_tank.sv
@@ -82,8 +85,17 @@ set sv_files {
     ../rtl/projectile/projectile.sv
     ../rtl/projectile/sin_lut.sv
     ../rtl/projectile/cos_lut.sv
+    ../rtl/projectile/draw_explosion.sv
+    ../rtl/projectile/explosion_ctl.sv
+    ../rtl/projectile/explosion.sv
     ../rtl/help/draw_help.sv
-    ../rtl/ps2_display.sv
+    ../rtl/FF_15.sv
+    ../rtl/draw_tanks_photo.sv
+    ../rtl/start_screen.sv
+    ../rtl/main_game_ctl.sv
+    ../rtl/main_game.sv
+    ../rtl/end_screen_ctl.sv
+    ../rtl/end_screen.sv
     ../rtl/top_vga_ctl.sv
     ../rtl/top_vga.sv
     rtl/top_vga_basys3.sv
@@ -91,11 +103,9 @@ set sv_files {
 
 # Specify Verilog design files location         -- EDIT
 set verilog_files {
-    ../fpga/rtl/clk_wiz_0.v
-    ../fpga/rtl/clk_wiz_0_clk_wiz.v
     ../fpga/rtl/clk_wiz_1.v
     ../fpga/rtl/clk_wiz_1_clk_wiz.v
-    ../rtl/disp_hex_mux.v
+    ../rtl/ps2_keyboard/disp_hex_mux.v
 }
 
 # Specify VHDL design files location            -- EDIT

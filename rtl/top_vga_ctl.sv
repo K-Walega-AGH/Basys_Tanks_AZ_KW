@@ -1,74 +1,133 @@
 module top_vga_ctl (
     input  logic clk,
-    input  logic rst,
-    // tank signals
-    input  logic  [1:0] hp_LEFT, hp_RIGHT,
-    input  logic  [7:0] angle_LEFT, angle_RIGHT,
-    input  logic [10:0] strength_LEFT, strength_RIGHT,
-    input  logic [10:0] fuel_LEFT, fuel_RIGHT,
-    input  logic [11:0] tank_xpos_LEFT, tank_ypos_LEFT,
-    input  logic [11:0] tank_xpos_RIGHT, tank_ypos_RIGHT,
-    input  logic  [6:0] barrel_end_xpos_LEFT, barrel_end_ypos_LEFT,
-    input  logic  [6:0] barrel_end_xpos_RIGHT, barrel_end_ypos_RIGHT,
-    input  logic        end_turn,
-    input  logic        enemy_hit,
+    input  logic rst_btnC,
 
+    input  logic start_game,
+    input  logic game_over,
+    input  logic restart_game,
+    input  logic internal_rst,
 
-    // output to indicate which player's turn it is
-    output logic  [1:0]  player_turn,
-    // interface signals for current player
-    output logic  [1:0] hp_CURRENT, hp_ENEMY,
-    output logic  [7:0] angle,
-    output logic [10:0] projectile_strength,
-    output logic [10:0] fuel,
-    // projectile signals
-    output logic [11:0] barrel_final_xpos, barrel_final_ypos,
-    output logic [11:0] enemy_xpos, enemy_ypos,
-    output logic        damaged_LEFT, damaged_RIGHT
+    input  logic arrow_up_in,
+    input  logic arrow_down_in,
+    input  logic arrow_left_in,
+    input  logic arrow_right_in,
+    input  logic space_in,
+    input  logic enter_in,
+    input  logic key_5_in,
+    input  logic key_1_in,
+    input  logic F_in,
+    input  logic H_in,
+
+    vga_if.in_m vga_start_screen,
+    vga_if.in_m vga_main_game,
+    vga_if.in_m vga_end_screen,
+
+    output logic arrow_up,
+    output logic arrow_down,
+    output logic arrow_left,
+    output logic arrow_right,
+    output logic space,
+    output logic enter,
+    output logic key_5,
+    output logic key_1,
+    output logic F,
+    output logic H,
+
+    output logic rst_out,
+
+    vga_if.out_m vga_top_if
 );
 
-    // internal turn register (2-bit)
-    logic [1:0] turn; // 2'b01 = LEFT, 2'b10 = RIGHT
+    // --------- FSM STATES ---------
+    typedef enum logic [1:0] {
+        STATE_START = 2'b00,
+        STATE_GAME  = 2'b01,
+        STATE_END   = 2'b10
+    } top_vga_state_t;
 
-    // turn logic
+    top_vga_state_t top_vga_st, top_vga_st_nxt;
+
+    // sync game_over with the clk
+    logic game_over_sync;
+    // catch posedge of start_game to launch game
+    logic start_game_d, start_game_posedge;
+
+    assign start_game_posedge = (!start_game_d && start_game);
+
+    // --------- NEXT STATE LOGIC (kombinacyjnie) ---------
+    always_comb begin
+        case (top_vga_st)
+            STATE_START: top_vga_st_nxt = start_game_posedge ? STATE_GAME  : STATE_START;
+            STATE_GAME:  top_vga_st_nxt = game_over_sync     ? STATE_END   : STATE_GAME;
+            STATE_END:   top_vga_st_nxt = STATE_END;
+        endcase
+    end
+
+    // --------- STATE REGISTER ---------
     always_ff @(posedge clk) begin
-        if (rst) begin
-            turn <= 2'b01; // start with LEFT player
+        if (rst_out) begin
+            game_over_sync <= '0;
+            start_game_d   <= '0;
+            
+            top_vga_st <= STATE_START;
         end else begin
-            if (turn == 2'b01 && end_turn)
-                turn <= 2'b10; // switch to RIGHT
-            else if (turn == 2'b10 && end_turn)
-                turn <= 2'b01; // switch to LEFT
+            game_over_sync <= game_over;
+            start_game_d   <= start_game;
+
+            top_vga_st <= top_vga_st_nxt;
         end
     end
 
-    /**
-     * Signals assignments
-     */
-
-    // assign turn signals to tanks
-
-    // assign turn to output
-    assign player_turn = turn;
-
-    // select signals for interface depending on turn
-    assign hp_CURRENT          = (turn == 2'b01) ? hp_LEFT  : hp_RIGHT;
-    assign hp_ENEMY            = (turn == 2'b01) ? hp_RIGHT : hp_LEFT;
-    assign angle               = (turn == 2'b01) ? angle_LEFT : angle_RIGHT;
-    assign projectile_strength = (turn == 2'b01) ? strength_LEFT : strength_RIGHT;
-    assign fuel                = (turn == 2'b01) ? fuel_LEFT : fuel_RIGHT;
-
-    // compute barrel final positions
-    assign barrel_final_xpos = (turn == 2'b01) ? 
-    (tank_xpos_LEFT  + barrel_end_xpos_LEFT)  : (tank_xpos_RIGHT + barrel_end_xpos_RIGHT);
-    assign barrel_final_ypos = (turn == 2'b01) ? 
-    (tank_ypos_LEFT  + barrel_end_ypos_LEFT)  : (tank_ypos_RIGHT + barrel_end_ypos_RIGHT);
-
-    // enemy position
-    assign enemy_xpos = (turn == 2'b01) ? tank_xpos_RIGHT : tank_xpos_LEFT;
-    assign enemy_ypos = (turn == 2'b01) ? tank_ypos_RIGHT : tank_ypos_LEFT;
-    // enemy hit signal
-    assign damaged_LEFT   = (enemy_hit && turn == 2'b10) ? enemy_hit : 1'b0;
-    assign damaged_RIGHT  = (enemy_hit && turn == 2'b01) ? enemy_hit : 1'b0;
+    // --------- OUTPUT LOGIC ---------
+    always_comb begin
+        vga_top_if.hcount = vga_main_game.hcount;
+        vga_top_if.hsync  = vga_main_game.hsync;
+        vga_top_if.hblnk  = vga_main_game.hblnk;
+        vga_top_if.vcount = vga_main_game.vcount;
+        vga_top_if.vsync  = vga_main_game.vsync;
+        vga_top_if.vblnk  = vga_main_game.vblnk;
+        rst_out = (top_vga_st == STATE_END) ? (rst_btnC || internal_rst) : rst_btnC;
+        case (top_vga_st)
+            STATE_START: begin
+                vga_top_if.rgb    = vga_start_screen.rgb;
+                arrow_up     = 0;
+                arrow_down   = 0;
+                arrow_left   = 0;
+                arrow_right  = 0;
+                space        = 0;
+                enter        = enter_in;
+                key_5        = 0;
+                key_1        = 0;
+                F            = 0;
+                H            = 0;
+            end
+            STATE_GAME: begin
+                vga_top_if.rgb    = vga_main_game.rgb;
+                arrow_up     = arrow_up_in;
+                arrow_down   = arrow_down_in;
+                arrow_left   = arrow_left_in;
+                arrow_right  = arrow_right_in;
+                space        = space_in;
+                enter        = 0;
+                key_5        = 0;
+                key_1        = 0;
+                F            = F_in;
+                H            = H_in;
+            end
+            STATE_END: begin
+                vga_top_if.rgb    = vga_end_screen.rgb;
+                arrow_up     = 0;
+                arrow_down   = 0;
+                arrow_left   = 0;
+                arrow_right  = 0;
+                space        = 0;
+                enter        = enter_in;
+                key_5        = 0;
+                key_1        = 0;
+                F            = 0;
+                H            = 0;
+            end
+        endcase
+    end
 
 endmodule

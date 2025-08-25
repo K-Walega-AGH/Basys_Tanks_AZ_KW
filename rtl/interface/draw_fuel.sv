@@ -33,9 +33,14 @@ module draw_fuel (
     logic [11:0] rgb_nxt, fuel_in_d_rgb;
     logic [19:0] pixel_addr;
     logic [11:0] rgb_pixel;
-    localparam logic [10:0] BAR_MAX_WIDTH = BORDER_FUEL_WIDTH - 6;
-    logic [20:0] bar_width;
-    logic [11:0] bar_left, bar_right;   //zmienic ilosc bitow zaleznie od szerokosci
+    // bar_width scaled for a sec to Q10.12 to reduce math operation (timing violation)
+    logic [21:0] bar_width_temp;
+    logic [10:0] bar_width;
+    logic [11:0] bar_left, bar_right;   //change bits in case of different bar size
+    // strength to bar variables
+    localparam logic [10:0] BAR_MAX_WIDTH = BORDER_STR_WIDTH - 6;
+    localparam BAR_SCALE_SHIFT = 12;
+    localparam BAR_SCALE_CONST = (BAR_MAX_WIDTH << BAR_SCALE_SHIFT) / MAX_FUEL;
 
     vga_if vga_image_fuel();
 
@@ -71,7 +76,8 @@ module draw_fuel (
         end
         // --- strength bar calculation ---
         // scale projectile_strength to bar to bar_width
-	    bar_width = (fuel * BAR_MAX_WIDTH) / MAX_FUEL;
+	    bar_width_temp = fuel * BAR_SCALE_CONST;
+        bar_width = bar_width_temp >> BAR_SCALE_SHIFT;
         if (bar_width > BAR_MAX_WIDTH) begin
             bar_width = BAR_MAX_WIDTH;
         end

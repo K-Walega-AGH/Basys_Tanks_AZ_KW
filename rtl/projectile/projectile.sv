@@ -41,13 +41,18 @@ module projectile
      */
     
     logic [11:0] projectile_xpos, projectile_ypos;
-    logic        show_bullet;
+    logic [11:0] explosion_xpos, explosion_ypos;
+    logic        show_bullet, activate_explosion;
     logic [31:0] sin_val, cos_val;
+    logic        end_turn_HIT, end_turn_NO_HIT;
+
+    vga_if vga_projectile2explosion();
  
     /**
      * Signals assignments
      */
 
+    assign end_turn = (end_turn_HIT || end_turn_NO_HIT);
     /**
      * Submodules instances
      */
@@ -62,7 +67,7 @@ module projectile
     .projectile_ypos(projectile_ypos),
 
     .projectile_in(projectile_in),
-    .projectile_out(projectile_out)
+    .projectile_out(vga_projectile2explosion)
     );
 
     projectile_ctl u_projectile_ctl (
@@ -82,12 +87,14 @@ module projectile
     .enemy_ypos(enemy_ypos),
 
     .enemy_hit(enemy_hit),
-    .end_turn(end_turn),
+    .end_turn(end_turn_NO_HIT),
+    .activate_explosion(activate_explosion),
     .show_bullet(show_bullet),
 
     .projectile_xpos(projectile_xpos),
-    .projectile_ypos(projectile_ypos)
-
+    .projectile_ypos(projectile_ypos),
+    .explosion_xpos(explosion_xpos),
+    .explosion_ypos(explosion_ypos)
     );
     sin_lut u_sin_lut (
     .angle(angle),
@@ -98,4 +105,17 @@ module projectile
     .cos_val(cos_val)
     );
 
+    explosion u_explosion (
+    .clk(clk),
+    .rst(rst),
+
+    .explosion_xpos(explosion_xpos),
+    .explosion_ypos(explosion_ypos),
+    .activate_explosion(activate_explosion),
+
+    .end_turn(end_turn_HIT),
+
+    .explosion_in(vga_projectile2explosion),
+    .explosion_out(projectile_out)
+);
 endmodule

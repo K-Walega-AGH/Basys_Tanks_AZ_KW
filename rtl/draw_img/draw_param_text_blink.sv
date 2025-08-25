@@ -7,9 +7,11 @@
  * Draw background.
  */
 
-module draw_param_text 
+module draw_param_text_blink 
     #(
         parameter string TEXT = " ",
+        parameter TEXT_COLOR = 12'hf_f_f,
+        parameter BG_COLOR = 12'h0_0_0,
         parameter LINES = 1,
         parameter TEXT_X = 0,
         parameter TEXT_Y = 0
@@ -36,11 +38,14 @@ module draw_param_text
     
     logic [11:0] rgb_nxt;
     logic [10:0] addr;
-    logic [14:0]  char_xy;
-    logic  [6:0]  char_code;
-    logic  [3:0]  char_line;
-    logic  [7:0]  char_line_pixels;
-    logic  [5:0]  used_lines;
+    logic [14:0] char_xy;
+    logic  [6:0] char_code;
+    logic  [3:0] char_line;
+    logic  [7:0] char_line_pixels;
+    logic  [5:0] used_lines;
+    localparam DELAY = 30_000_000; // 500ms delay, 60MHz clk
+    logic [24:0] delay_ctr;
+    logic        toggle_colors;
 
     vga_if vga_text();
 
@@ -60,6 +65,8 @@ module draw_param_text
             text_out.hsync <= '0;
             text_out.hblnk <= '0; 
             text_out.rgb <= '0;
+            delay_ctr <= '0;
+            toggle_colors <= '0;
         end else begin
             text_out.vcount <= vga_text.vcount;
             text_out.vsync  <= vga_text.vsync;
@@ -68,6 +75,12 @@ module draw_param_text
             text_out.hsync  <= vga_text.hsync;
             text_out.hblnk  <= vga_text.hblnk;
             text_out.rgb    <= rgb_nxt;
+            if(delay_ctr < DELAY)
+                delay_ctr <= delay_ctr + 1;
+            else begin 
+                delay_ctr <= '0;
+                toggle_colors <= !toggle_colors;
+            end
         end
     end
 
@@ -79,12 +92,14 @@ module draw_param_text
         .N_buf(2),
         .XPOS(TEXT_X),
         .YPOS(TEXT_Y),
+        .TEXT_COLOR(TEXT_COLOR),
+        .BG_COLOR(BG_COLOR),
         .AMOUNT_OF_LETTERS(TEXT_LENGTH),
         .AMOUNT_OF_LINES(LINES)
     ) u_draw_rect_char (
         .clk(clk),
         .rst(rst),
-        .toggle_colors(1'b0),
+        .toggle_colors(toggle_colors),
         .used_lines(used_lines),
         .char_line_pixels(char_line_pixels),
         .char_xy(char_xy),
