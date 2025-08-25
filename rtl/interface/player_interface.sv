@@ -7,7 +7,7 @@ module player_interface (
         input  logic  [1:0] hp_ENEMY,
         input  logic  [7:0] angle,
         input  logic [10:0] projectile_strength,
-        input  logic [10:0] fuel,
+        input  logic  [6:0] fuel,
     
         vga_if.in_m         interface_in,
         vga_if.out_m        interface_out

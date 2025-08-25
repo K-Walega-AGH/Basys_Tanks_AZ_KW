@@ -44,12 +44,12 @@ module main_game (
     logic  [7:0] angle_LEFT, angle_RIGHT;
     logic [10:0] projectile_strength_LEFT, projectile_strength_RIGHT;
     logic  [1:0] hp_LEFT, hp_RIGHT;
-    logic [10:0] fuel_LEFT, fuel_RIGHT;
+    logic  [6:0] fuel_LEFT, fuel_RIGHT;
     // signals from top_vga_ctl
     logic  [1:0] hp_CURRENT, hp_ENEMY;
     logic  [7:0] angle;
     logic [10:0] projectile_strength;
-    logic [10:0] fuel;
+    logic  [6:0] fuel;
     logic [11:0] barrel_final_xpos, barrel_final_ypos;
     logic [11:0] enemy_xpos, enemy_ypos;
     logic        enemy_hit;

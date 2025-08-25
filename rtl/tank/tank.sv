@@ -19,7 +19,7 @@ module tank
     output logic  [7:0] angle,
     output logic [10:0] projectile_strength,
     output logic  [1:0] hp,
-    output logic [10:0] fuel,
+    output logic  [6:0] fuel,
     output logic [11:0] tank_xpos,
     output logic [11:0] tank_ypos,
     output logic  [6:0] barrel_end_xpos,

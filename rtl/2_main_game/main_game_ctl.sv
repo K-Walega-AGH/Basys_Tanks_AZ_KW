@@ -5,7 +5,7 @@ module main_game_ctl (
     input  logic  [1:0] hp_LEFT, hp_RIGHT,
     input  logic  [7:0] angle_LEFT, angle_RIGHT,
     input  logic [10:0] strength_LEFT, strength_RIGHT,
-    input  logic [10:0] fuel_LEFT, fuel_RIGHT,
+    input  logic  [6:0] fuel_LEFT, fuel_RIGHT,
     input  logic [11:0] tank_xpos_LEFT, tank_ypos_LEFT,
     input  logic [11:0] tank_xpos_RIGHT, tank_ypos_RIGHT,
     input  logic  [6:0] barrel_end_xpos_LEFT, barrel_end_ypos_LEFT,
@@ -19,7 +19,7 @@ module main_game_ctl (
     output logic  [1:0] hp_CURRENT, hp_ENEMY,
     output logic  [7:0] angle,
     output logic [10:0] projectile_strength,
-    output logic [10:0] fuel,
+    output logic  [6:0] fuel,
     // projectile signals
     output logic [11:0] barrel_final_xpos, barrel_final_ypos,
     output logic [11:0] enemy_xpos, enemy_ypos,

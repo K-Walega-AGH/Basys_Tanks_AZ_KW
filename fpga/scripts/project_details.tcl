@@ -34,9 +34,10 @@ set xdc_files {
 set sv_files {
     ../rtl/vga/vga_timing.sv
     ../rtl/vga/vga_if.sv
-    ../rtl/vga_if_delay.sv
-    ../rtl/delay.sv
+    ../rtl/delay/vga_if_delay.sv
+    ../rtl/delay/delay.sv
     ../rtl/vga/vga_pkg.sv
+    ../rtl/uart/uart_pkg.sv
     ../rtl/terrain/terrain_pkg.sv
     ../rtl/tank/tank_pkg.sv
     ../rtl/interface/interface_pkg.sv
@@ -45,14 +46,10 @@ set sv_files {
     ../rtl/ps2_keyboard/ps2_keyboard_ctl.sv
     ../rtl/ps2_keyboard/ps2_keyboard.sv
     ../rtl/ps2_keyboard/ps2_display.sv
-    ../rtl/background/draw_bg.sv
-    ../rtl/terrain/draw_terrain.sv
-    ../rtl/interface/draw_if_bg.sv
-    ../rtl/interface/draw_hp.sv
-    ../rtl/interface/draw_strength.sv
-    ../rtl/interface/draw_fuel.sv
-    ../rtl/interface/draw_angle.sv
-    ../rtl/interface/player_interface.sv
+    ../rtl/ps2_keyboard/FF_15.sv
+    ../rtl/uart/display_UART.sv
+    ../rtl/uart/monitor_UART.sv
+    ../rtl/uart/top_uart.sv
     ../rtl/draw_img/draw_param_text_blink.sv
     ../rtl/draw_img/draw_param_text.sv
     ../rtl/draw_img/draw_rect_char.sv
@@ -73,6 +70,14 @@ set sv_files {
     ../rtl/rom/explosion_rom.sv
     ../rtl/rom/help_rom.sv
     ../rtl/rom/text_rom.sv
+    ../rtl/background/draw_bg.sv
+    ../rtl/terrain/draw_terrain.sv
+    ../rtl/interface/draw_if_bg.sv
+    ../rtl/interface/draw_hp.sv
+    ../rtl/interface/draw_strength.sv
+    ../rtl/interface/draw_fuel.sv
+    ../rtl/interface/draw_angle.sv
+    ../rtl/interface/player_interface.sv
     ../rtl/tank/draw_tank.sv
     ../rtl/tank/tank_ctl.sv
     ../rtl/tank/tank_move.sv
@@ -89,13 +94,12 @@ set sv_files {
     ../rtl/projectile/explosion_ctl.sv
     ../rtl/projectile/explosion.sv
     ../rtl/help/draw_help.sv
-    ../rtl/FF_15.sv
-    ../rtl/draw_tanks_photo.sv
-    ../rtl/start_screen.sv
-    ../rtl/main_game_ctl.sv
-    ../rtl/main_game.sv
-    ../rtl/end_screen_ctl.sv
-    ../rtl/end_screen.sv
+    ../rtl/1_start_screen/draw_tanks_photo.sv
+    ../rtl/1_start_screen/start_screen.sv
+    ../rtl/2_main_game/main_game_ctl.sv
+    ../rtl/2_main_game/main_game.sv
+    ../rtl/3_end_screen/end_screen_ctl.sv
+    ../rtl/3_end_screen/end_screen.sv
     ../rtl/top_vga_ctl.sv
     ../rtl/top_vga.sv
     rtl/top_vga_basys3.sv
@@ -105,7 +109,15 @@ set sv_files {
 set verilog_files {
     ../fpga/rtl/clk_wiz_1.v
     ../fpga/rtl/clk_wiz_1_clk_wiz.v
-    ../rtl/ps2_keyboard/disp_hex_mux.v
+    ../rtl/uart/lab6_files/flag_buf.v
+    ../rtl/uart/lab6_files/debounce.v
+    ../rtl/uart/lab6_files/fifo.v
+    ../rtl/uart/lab6_files/mod_m_counter.v
+    ../rtl/uart/lab6_files/uart_tx.v
+    ../rtl/uart/lab6_files/uart_rx.v
+    ../rtl/uart/lab6_files/uart.v
+    ../rtl/uart/lab6_files/disp_hex_mux.v
+    
 }
 
 # Specify VHDL design files location            -- EDIT

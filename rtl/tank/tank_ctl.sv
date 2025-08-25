@@ -17,7 +17,7 @@ module tank_ctl
     input  logic       damaged,
 
     output logic  [1:0] hp,
-    output logic [10:0] fuel,
+    output logic  [6:0] fuel,
     output logic [10:0] projectile_strength,
     output logic [11:0] tank_xpos,
     output logic [11:0] tank_ypos
@@ -43,10 +43,10 @@ module tank_ctl
     logic [11:0] xpos, xpos_nxt;
     logic [11:0] ypos, ypos_nxt;
     // tank fuel
-    logic [10:0] local_fuel, local_fuel_nxt;
-    logic [1:0] local_hp;
+    logic  [6:0] local_fuel, local_fuel_nxt;
+    logic  [1:0] local_hp;
     // delay for movement
-    logic [19:0] delay_ctr;
+    logic [21:0] delay_ctr;
     // projectile strength value
     logic [10:0] projectile_strength_nxt;
     // variables for rising edge of your_turn for state change WAITING -> IDLE

@@ -13,9 +13,9 @@
     localparam TANK_RIGHT_X_INIT = 900;
     localparam TANK_RIGHT_Y_INIT = TERRAIN_INIT - TANK_HEIGHT;
     // movement constants
-    localparam MAX_FUEL = 1000;
+    localparam MAX_FUEL = 100;
     localparam MOVE_STEP = 1;
-    localparam MOVE_DELAY = 600_000;  // delay by 10ms, clk 60MHz
+    localparam MOVE_DELAY = 3_000_000;  // delay by 50ms, clk 60MHz
     // strength constants
     localparam MAX_STRENGTH = 1200;
     localparam STR_DELAY = 60_000;  // delay by 1ms, clk 60MHz

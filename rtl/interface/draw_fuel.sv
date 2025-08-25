@@ -11,7 +11,7 @@ module draw_fuel (
         input  logic clk,
         input  logic rst,
         
-        input  logic [10:0] fuel,
+        input  logic  [6:0] fuel,
 
         vga_if.in_m         fuel_in,
         vga_if.out_m        fuel_out
@@ -93,7 +93,7 @@ module draw_fuel (
 
             if ( (vga_image_fuel.hcount >= bar_left) &&
                  (vga_image_fuel.hcount < bar_right) ) begin
-                rgb_nxt = 12'hF00;  // color of the bar
+                rgb_nxt = 12'hf_0_0;  // color of the bar
             end
         end
     end
