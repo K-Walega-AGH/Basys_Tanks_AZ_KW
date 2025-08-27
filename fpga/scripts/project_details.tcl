@@ -36,13 +36,14 @@ set sv_files {
     ../rtl/vga/vga_if.sv
     ../rtl/delay/vga_if_delay.sv
     ../rtl/delay/delay.sv
+    ../rtl/delay/sync_2xff.sv
     ../rtl/vga/vga_pkg.sv
     ../rtl/uart/uart_pkg.sv
     ../rtl/terrain/terrain_pkg.sv
     ../rtl/tank/tank_pkg.sv
     ../rtl/interface/interface_pkg.sv
     ../rtl/projectile/projectile_pkg.sv
-    ../rtl/ps2_keyboard/ps2_keyboard_latch.sv
+    ../rtl/ps2_keyboard/ps2_keyboard_2xff.sv
     ../rtl/ps2_keyboard/ps2_keyboard_ctl.sv
     ../rtl/ps2_keyboard/ps2_keyboard.sv
     ../rtl/ps2_keyboard/ps2_display.sv

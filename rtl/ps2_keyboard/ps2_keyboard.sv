@@ -3,6 +3,9 @@ module ps2_keyboard (
     input  logic clk60MHz,
     input  logic rst,
 
+    input  logic       player_turn,
+    input  logic [7:0] uart_rx_data,
+    input  logic       uart_read_data,
     input  logic ps2_clk,
     input  logic ps2_data,
 
@@ -17,6 +20,8 @@ module ps2_keyboard (
     output logic       F,
     output logic       H,
 
+    output logic [7:0] ps2_rx_data_out,
+    output logic       ps2_read_data_out,
     output logic [7:0] rx_data_out,
     output logic       read_data_out
 );
@@ -26,8 +31,8 @@ module ps2_keyboard (
      */
 
     // interface signals
-    logic [7:0] rx_data;
-    logic       read_data;
+    logic [7:0] rx_data, ps2_rx_data;
+    logic       read_data, ps2_read_data;
     logic       busy;
     logic       err;
     // keys pressed 100MHz signals
@@ -38,6 +43,10 @@ module ps2_keyboard (
      * Signals assignments
      */
 
+    assign rx_data = (player_turn) ? ps2_rx_data : uart_rx_data;
+    assign read_data = (player_turn) ? ps2_read_data : uart_read_data;
+    assign ps2_rx_data_out = ps2_rx_data;
+    assign ps2_read_data_out = ps2_read_data;
     assign rx_data_out = rx_data;
     assign read_data_out = read_data;
 
@@ -52,8 +61,8 @@ module ps2_keyboard (
         .rst       (rst),
         .tx_data   (8'd0),
         .write_data(1'b0),
-        .rx_data   (rx_data),
-        .read_data (read_data),
+        .rx_data   (ps2_rx_data),
+        .read_data (ps2_read_data),
         .busy      (busy),
         .err       (err)
     );
@@ -73,7 +82,7 @@ module ps2_keyboard (
         .arrow_left (arrow_left100MHz),
         .arrow_right(arrow_right100MHz)
     );
-    ps2_keyboard_latch u_ps2_keyboard_latch(
+    ps2_keyboard_2xff u_ps2_keyboard_2xff(
         .clk(clk60MHz),
         .rst(rst),
         // input signals
@@ -99,5 +108,5 @@ module ps2_keyboard (
         .arrow_left (arrow_left),
         .arrow_right(arrow_right)
     );
-
+    
 endmodule

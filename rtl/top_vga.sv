@@ -1,8 +1,16 @@
 
 module top_vga (
     input  logic clk,
-    input  logic rst_btnC,
     input  logic clk100MHz,
+    input  logic rst_btnC,
+    input  logic uart_btnU,
+    input  logic [1:0] sw,
+
+    input  logic uart_rx_usb,
+    output logic uart_tx_usb,
+    input  logic uart_rx_JA1,
+    output logic uart_tx_JA2,
+
     inout  logic ps2_clk,
     inout  logic ps2_data,
     output logic vs,
@@ -35,12 +43,16 @@ module top_vga (
     // LEFT  won => 2'b01
     // RIGHT won => 2'b11
     logic  [1:0] game_over;
-    logic  [1:0]  game_over_CODE;
+    logic  [1:0] game_over_CODE;
     logic        restart_game;
     logic        internal_rst;
     // ps2 signals for hex display
-    logic  [7:0] rx_data;
-    logic        read_data;
+    logic  [7:0] ps2_rx_data, rx_data;
+    logic        ps2_read_data, read_data;
+    // uart signals
+    logic        uart_rx, uart_tx;
+    logic  [7:0] uart_rx_data;
+    logic        uart_read_data;
 
     // interfaces from different states
     vga_if vga_timing();
@@ -71,7 +83,11 @@ module top_vga (
     // --------- led for debug --------- 
     assign led = {fire_active, moving, change_angle};
     assign game_over_CODE[1] = (player_turn == 2'b01) ? 1'b1 : 1'b0; // if left then P1 ff'ed
-
+    // uart trying to implement
+    assign uart_rx = (sw[1]) ? uart_rx_usb : uart_rx_JA1;
+    assign uart_tx_usb = uart_tx;
+    assign uart_tx_JA2 = uart_tx;
+    
     /**
      * Submodules instances
      */
@@ -117,14 +133,6 @@ module top_vga (
         .vga_main_game_in(vga_bg),
         .vga_main_game_out(vga_main_game)
     );
-    FF_15 u_ff15 (
-        .clk(clk),
-        .rst(rst),
-
-        .rx_data(rx_data),
-
-        .game_over_CODE(game_over_CODE[0])
-    );
 
     end_screen u_end_screen (
         .clk(clk),
@@ -138,12 +146,14 @@ module top_vga (
         .vga_end_screen_in(vga_bg),
         .vga_end_screen_out(vga_end_screen)
     );
-
     ps2_keyboard u_ps2_keyboard(
         .clk100MHz(clk100MHz),
         .clk60MHz(clk),
         .rst(rst),
     
+        .player_turn(player_turn[0]),
+        .uart_rx_data(uart_rx_data),
+        .uart_read_data(uart_read_data),
         .ps2_clk(ps2_clk),
         .ps2_data(ps2_data),
     
@@ -158,11 +168,21 @@ module top_vga (
         .F(F_ps2),
         .H(H_ps2),
     
+        .ps2_rx_data_out(ps2_rx_data),
+        .ps2_read_data_out(ps2_read_data),
         .rx_data_out(rx_data),
         .read_data_out(read_data)
         );
-    ps2_display u_ps2_display(
+    FF_15 u_ff15 (
         .clk(clk),
+        .rst(rst),
+
+        .rx_data(rx_data),
+
+        .game_over_CODE(game_over_CODE[0])
+    );
+    ps2_display u_ps2_display(
+        .clk(clk100MHz),
         .rst(rst),
     
         .rx_data(rx_data),
@@ -170,6 +190,20 @@ module top_vga (
     
         .sseg(sseg),
         .an(an)
+        );
+    top_uart u_top_uart (
+        .clk(clk100MHz),
+        .rst(rst),
+        .loopback_enable(sw[0]),
+        .increase_enable(uart_btnU),
+        .uart_rx(uart_rx),
+        .uart_tx(uart_tx),
+        .rx_data(uart_rx_data),
+        .read_data(uart_read_data),
+        .tx_data(ps2_rx_data),
+        .send_data(ps2_read_data)
+        // .rx_monitor(),
+        // .tx_monitor()
         );
 
     top_vga_ctl u_top_vga_ctl (
