@@ -53,9 +53,14 @@
 # commented constraints can be used in the top level xdc 
 #----------------------------------------------------------------
 # Connect to input port when clock capable pin is selected for input
-create_clock -period 10.0 [get_ports clk_in1]
-set_input_jitter [get_clocks -of_objects [get_ports clk_in1]] 0.100
+create_clock -period 10.0 [get_ports clk]
+set_input_jitter [get_clocks -of_objects [get_ports clk]] 0.100
 
-
-set_false_path -to [get_cells  -hier {*seq_reg*[0]} -filter {is_sequential}]
+# We dont have any registers like this
+#set_false_path -to [get_cells  -hier {*seq_reg*[0]} -filter {is_sequential}]
 set_property PHASESHIFT_MODE WAVEFORM [get_cells -hierarchical *adv*]
+# paths between 'clk100MHz' and 'clk'(clk60MHz) 
+# # should be correctly synced according to CDC Rules
+# set_clock_groups -asynchronous -group [get_clocks clk100MHz] -group [get_clocks clk]
+# set_clock_groups -asynchronous -group [get_clocks clk] -group [get_clocks clk100MHz]
+

@@ -1,5 +1,8 @@
 
-module draw_barrel (
+module draw_barrel 
+    #(
+        PLAYER_ID = 1
+    )(
         input  logic clk,
         input  logic rst,
         
@@ -22,7 +25,7 @@ module draw_barrel (
      * Local variables and signals
      */
 
-    logic [11:0] rgb_nxt;
+    logic [11:0] rgb_nxt, barrel_in_d_rgb;
     logic [19:0] pixel_addr;
     logic [11:0] rgb_pixel;
     logic [11:0] rgb_pixel0, rgb_pixel1, rgb_pixel2, rgb_pixel3, rgb_pixel4, rgb_pixel5, rgb_pixel6, rgb_pixel7;
@@ -63,10 +66,9 @@ module draw_barrel (
             3'd5: rgb_pixel = rgb_pixel5;
             3'd6: rgb_pixel = rgb_pixel6;
             3'd7: rgb_pixel = rgb_pixel7;
-            default: rgb_pixel = rgb_pixel0;
         endcase
         if(vga_image_barrel.rgb == 12'hf_f_f || vga_image_barrel.rgb == 12'hf_0_f) begin
-            rgb_nxt = barrel_in.rgb;          // - fill with BACKGROUND
+            rgb_nxt = barrel_in_d_rgb;          // - fill with BACKGROUND
         end else begin
             rgb_nxt = vga_image_barrel.rgb;   // - fill with IMAGE  
         end
@@ -76,8 +78,8 @@ module draw_barrel (
     draw_rect_image 
     #(
         .N_buf(2),
-        .WIDTH(TANK_WIDTH-1),
-        .HEIGHT(TANK_HEIGHT-1)
+        .WIDTH(TANK_WIDTH),
+        .HEIGHT(TANK_HEIGHT)
     ) tank_from_image (
         .clk(clk),
         .rst(rst),
@@ -91,8 +93,10 @@ module draw_barrel (
         .rect_image_in    (barrel_in),
         .rect_image_out   (vga_image_barrel)
     );
+    // animation roms
     barrel_rom     
     #(
+        .PLAYER_ID(PLAYER_ID),
         .ANGLE_INDEX(0)
     ) u_barrel0_rom ( 
         .clk(clk),
@@ -101,6 +105,7 @@ module draw_barrel (
     );
     barrel_rom     
     #(
+        .PLAYER_ID(PLAYER_ID),
         .ANGLE_INDEX(1)
     ) u_barrel1_rom ( 
         .clk(clk),
@@ -109,6 +114,7 @@ module draw_barrel (
     );
     barrel_rom     
     #(
+        .PLAYER_ID(PLAYER_ID),
         .ANGLE_INDEX(2)
     ) u_barrel2_rom ( 
         .clk(clk),
@@ -117,6 +123,7 @@ module draw_barrel (
     );
     barrel_rom     
     #(
+        .PLAYER_ID(PLAYER_ID),
         .ANGLE_INDEX(3)
     ) u_barrel3_rom ( 
         .clk(clk),
@@ -125,6 +132,7 @@ module draw_barrel (
     );
     barrel_rom     
     #(
+        .PLAYER_ID(PLAYER_ID),
         .ANGLE_INDEX(4)
     ) u_barrel4_rom ( 
         .clk(clk),
@@ -133,6 +141,7 @@ module draw_barrel (
     );
     barrel_rom     
     #(
+        .PLAYER_ID(PLAYER_ID),
         .ANGLE_INDEX(5)
     ) u_barrel5_rom ( 
         .clk(clk),
@@ -141,6 +150,7 @@ module draw_barrel (
     );
     barrel_rom     
     #(
+        .PLAYER_ID(PLAYER_ID),
         .ANGLE_INDEX(6)
     ) u_barrel6_rom ( 
         .clk(clk),
@@ -149,10 +159,19 @@ module draw_barrel (
     );
     barrel_rom     
     #(
+        .PLAYER_ID(PLAYER_ID),
         .ANGLE_INDEX(7)
     ) u_barrel7_rom ( 
         .clk(clk),
         .address(pixel_addr),  // address = {addry[9:0], addrx[9:0]}
         .rgb(rgb_pixel7)
     );
+    // delay bg to match image
+    delay #(.WIDTH(12), .CLK_DEL(3)) d_rgb (
+    .clk(clk),
+    .rst(rst),
+    .din(barrel_in.rgb),
+    .dout(barrel_in_d_rgb)
+    );
+
 endmodule

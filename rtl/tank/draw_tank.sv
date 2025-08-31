@@ -1,5 +1,8 @@
 
-module draw_tank (
+module draw_tank 
+    #(
+        PLAYER_ID = 1
+    )(
         input  logic clk,
         input  logic rst,
         
@@ -21,11 +24,12 @@ module draw_tank (
      * Local variables and signals
      */
 
-    logic [11:0] rgb_nxt;
-    logic [19:0] pixel_addr;
-    logic [11:0] rgb_pixel;
+    logic [11:0] rgb_nxt, tank_in_d_rgb;
+    logic [19:0] pixel_addr_L, pixel_addr_R;
+    logic [11:0] rgb_pixel_L, rgb_pixel_R;
 
-    vga_if vga_image_tank();
+    vga_if vga_image_tank_L();
+    vga_if vga_image_tank_R();
 
     /**
      * Internal logic
@@ -41,47 +45,86 @@ module draw_tank (
             tank_out.hblnk  <= '0;
             tank_out.rgb    <= '0;
         end else begin
-            tank_out.vcount <= vga_image_tank.vcount;
-            tank_out.vsync  <= vga_image_tank.vsync;
-            tank_out.vblnk  <= vga_image_tank.vblnk;
-            tank_out.hcount <= vga_image_tank.hcount;
-            tank_out.hsync  <= vga_image_tank.hsync;
-            tank_out.hblnk  <= vga_image_tank.hblnk;
+            tank_out.vcount <= vga_image_tank_L.vcount; //nie ma znaczenia L/R bo opoznione o tyle samo
+            tank_out.vsync  <= vga_image_tank_L.vsync;
+            tank_out.vblnk  <= vga_image_tank_L.vblnk;
+            tank_out.hcount <= vga_image_tank_L.hcount;
+            tank_out.hsync  <= vga_image_tank_L.hsync;
+            tank_out.hblnk  <= vga_image_tank_L.hblnk;
             tank_out.rgb    <= rgb_nxt;
         end
     end
 
     always_comb begin : tank_comb_blk
-        if(vga_image_tank.rgb == 12'hf_f_f) begin
-            rgb_nxt = tank_in.rgb;          // - fill with BACKGROUND
+        if(vga_image_tank_L.rgb == 12'hf_f_f) begin
+            rgb_nxt = tank_in_d_rgb;          // - fill with BACKGROUND
         end else begin
-            rgb_nxt = vga_image_tank.rgb;   // - fill with IMAGE  
+            if(PLAYER_ID == 1)
+                rgb_nxt = vga_image_tank_L.rgb;   // - fill with IMAGE
+            else
+                rgb_nxt = vga_image_tank_R.rgb;   // - fill with IMAGE
         end
     end
 
-// draw_rect_image module for background generation from file
     draw_rect_image 
     #(
         .N_buf(2),
-        .WIDTH(TANK_WIDTH-1),
-        .HEIGHT(TANK_HEIGHT-1)
-    ) tank_from_image (
+        .WIDTH(TANK_WIDTH),
+        .HEIGHT(TANK_HEIGHT)
+    ) tank_L_from_image (
         .clk(clk),
         .rst(rst),
 
         .xpos(tank_xpos),
         .ypos(tank_ypos),
 
-        .rgb_pixel(rgb_pixel),
-        .pixel_addr(pixel_addr),
+        .rgb_pixel(rgb_pixel_L),
+        .pixel_addr(pixel_addr_L),
         
         .rect_image_in    (tank_in),
-        .rect_image_out   (vga_image_tank)
+        .rect_image_out   (vga_image_tank_L)
     );
-    tank_rom u_tank_rom ( 
+    tank_rom 
+    #(
+        .PLAYER_ID(PLAYER_ID)
+    ) u_tank_L_rom ( 
         .clk(clk),
-        .address(pixel_addr),  // address = {addry[9:0], addrx[9:0]}
-        .rgb(rgb_pixel)
+        .address(pixel_addr_L),  // address = {addry[9:0], addrx[9:0]}
+        .rgb(rgb_pixel_L)
     );
+    draw_rect_image 
+    #(
+        .N_buf(2),
+        .WIDTH(TANK_WIDTH),
+        .HEIGHT(TANK_HEIGHT)
+    ) tank_R_from_image (
+        .clk(clk),
+        .rst(rst),
+
+        .xpos(tank_xpos),
+        .ypos(tank_ypos),
+
+        .rgb_pixel(rgb_pixel_R),
+        .pixel_addr(pixel_addr_R),
+        
+        .rect_image_in    (tank_in),
+        .rect_image_out   (vga_image_tank_R)
+    );
+    tank_rom 
+    #(
+        .PLAYER_ID(PLAYER_ID)
+    ) u_tank_R_rom ( 
+        .clk(clk),
+        .address(pixel_addr_R),  // address = {addry[9:0], addrx[9:0]}
+        .rgb(rgb_pixel_R)
+    );
+    // delay bg to match image
+    delay #(.WIDTH(12), .CLK_DEL(3)) d_rgb (
+    .clk(clk),
+    .rst(rst),
+    .din(tank_in.rgb),
+    .dout(tank_in_d_rgb)
+    );
+
 
 endmodule

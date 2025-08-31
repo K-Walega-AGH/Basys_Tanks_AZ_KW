@@ -57,17 +57,26 @@ module top_vga_tb;
      * Submodules instances
      */
 
-    top_vga dut (
+     top_vga u_top_vga (
         .clk(clk),
-        .rst(rst),
-        .clk100MHz(),
-        .ps2_clk(),
-        .ps2_data(),
-        .vs(vs),
-        .hs(hs),
+        // .clk100MHz(),
+        .rst_btnC(rst),
+        // .uart_btnU(),
+        // .sw(),
+        // .uart_rx_usb(),
+        // .uart_tx_usb(),
+        // .uart_rx_JA1(),
+        // .uart_tx_JA2(),
+        // .ps2_clk(),
+        // .ps2_data(),
         .r(r),
         .g(g),
-        .b(b)
+        .b(b),
+        .hs(hs),
+        .vs(vs)
+        // .sseg(),
+        // .an(),
+        // .led()
     );
 
     tiff_writer #(
@@ -105,9 +114,5 @@ module top_vga_tb;
         $finish;
     end
 
-    initial begin
-        force dut.u_tank_LEFT.tank_xpos = TANK_X_INIT;
-        force dut.u_tank_LEFT.tank_ypos = TANK_Y_INIT;
-    end
 
 endmodule

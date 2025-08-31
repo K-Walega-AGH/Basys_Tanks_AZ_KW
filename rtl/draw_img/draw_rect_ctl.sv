@@ -50,7 +50,7 @@ logic [23:0] delay_counter;
 logic [31:0] velocity;      // Q12.20 format
 logic        falling;
 
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk) begin
     if (rst) begin
         xpos_out        <= '0;
         ypos_out        <= '0;

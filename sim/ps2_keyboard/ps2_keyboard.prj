@@ -1,0 +1,8 @@
+
+# ps2 keyboard testbench
+
+sv work     ../../rtl/ps2_keyboard/ps2_keyboard_ctl.sv \
+            ../../rtl/ps2_keyboard/ps2_keyboard.sv \
+            ps2_keyboard_tb.sv
+
+vhdl work   ../../rtl/ps2_keyboard/Ps2Interface.vhd

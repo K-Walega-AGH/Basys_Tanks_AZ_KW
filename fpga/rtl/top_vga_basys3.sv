@@ -13,16 +13,29 @@
  */
 
 module top_vga_basys3 (
-        input  wire clk,
-        input  wire btnC,
-        inout  wire ps2_clk,
-        inout  wire ps2_data,
-        output wire Vsync,
-        output wire Hsync,
-        output wire [3:0] vgaRed,
-        output wire [3:0] vgaGreen,
-        output wire [3:0] vgaBlue,
-        output wire JA1
+        input  wire         clk,
+        input  wire         btnC,
+        input  wire         btnU,
+        input  wire   [2:0] sw,
+
+        input  wire         RsRx,
+        output wire         RsTx,
+        input  wire         JA1,
+        output wire         JA2,
+        input  wire         JA3,
+        output wire         JA4,
+
+        inout  wire         ps2_clk,
+        inout  wire         ps2_data,
+
+        output wire         Vsync,
+        output wire         Hsync,
+        output wire   [3:0] vgaRed,
+        output wire   [3:0] vgaGreen,
+        output wire   [3:0] vgaBlue,
+        output wire   [7:0] seg,
+        output wire   [3:0] an,
+        output wire [15:11] led
     );
 
     timeunit 1ns;
@@ -46,7 +59,7 @@ module top_vga_basys3 (
      * Signals assignments
      */
 
-    assign JA1 = clk40MHz_mirror;
+    // assign JA1 = clk40MHz_mirror;
 
 
     /**
@@ -56,8 +69,11 @@ module top_vga_basys3 (
     clk_wiz_1 u_clk_wiz_1
     (
         // Clock out ports
+        .clk100MHz_ce(1'b1),
         .clk100MHz(clk100MHz),
+        .clk60MHz_ce(1'b1),
         .clk60MHz(clk60MHz),
+        .clk40MHz_ce(1'b1),
         .clk40MHz(clk40MHz),
         // Status and control signals
         .locked(locked),
@@ -86,15 +102,33 @@ module top_vga_basys3 (
 
     top_vga u_top_vga (
         .clk(clk60MHz),
-        .rst(btnC),
+        .clk100MHz(clk100MHz),
+        .rst_btnC(btnC),
+        .uart_btnU(btnU),
+        .sw(sw),
+
+        //USB-RS232
+        .uart_rx_usb(RsRx),
+        .uart_tx_usb(RsTx),
+
+        //JA1 = rx, JA2 = tx, JA3 = Player_ready
+        .uart_rx_JA1(JA1),
+        .uart_tx_JA2(JA2),
+        .Player_rd_JA3(JA3),
+        .Player_rd_JA4(JA4),
+
+        .ps2_clk(ps2_clk),
+        .ps2_data(ps2_data),
+
         .r(vgaRed),
         .g(vgaGreen),
         .b(vgaBlue),
         .hs(Hsync),
         .vs(Vsync),
-        .ps2_clk(ps2_clk),
-        .ps2_data(ps2_data),
-        .clk100MHz(clk100MHz)
+
+        .sseg(seg),
+        .an(an),
+        .led(led)
     );
 
 endmodule
