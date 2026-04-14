@@ -40,11 +40,4 @@ Projekt wykorzystuje skrypty automatyzujące, co znacząco przyspiesza cykl dewe
 
 ---
 
-## 🚀 Jak uruchomić projekt?
-
-### Wymagania:
-* Vivado Design Suite (rekomendowana wersja zgodna z projektem).
-* Płytka Digilent Basys 3.
-* Monitor VGA oraz klawiatura PS/2.
-
 Projekt realizowany w ramach laboratorium Układy Elektroniczne Cyfrowe 2 (UEC2).
